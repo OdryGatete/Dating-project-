@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AmorWa – Register</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body class="page-auth">
+
+  <header class="top-bar">
+    <a href="index.html" class="back-btn">← <span data-i18n="back">Back</span></a>
+    <div class="logo-mark">AmorWa</div>
+    <div class="top-actions">
+      <button class="lang-btn" id="langToggle">🌐 <span id="langLabel">EN</span></button>
+      <button class="theme-btn" id="themeToggle">🌙</button>
+    </div>
+  </header>
+
+  <main class="auth-main">
+    <div class="auth-card">
+      <div class="auth-header">
+        <h2 data-i18n="createAccount">Create Account</h2>
+        <p data-i18n="joinUs">Join AmorWa and start your journey ✨</p>
+      </div>
+
+      <form class="auth-form" id="registerForm" novalidate>
+        <div class="form-group">
+          <label data-i18n="yourName">Your Name</label>
+          <input type="text" id="regName" placeholder="e.g. Amara Uwase" autocomplete="name" />
+          <span class="field-err" id="errName"></span>
+        </div>
+        <div class="form-group">
+          <label data-i18n="email">Email</label>
+          <input type="email" id="regEmail" placeholder="you@example.com" autocomplete="email" />
+          <span class="field-err" id="errEmail"></span>
+        </div>
+        <div class="form-group">
+          <label data-i18n="password">Password</label>
+          <div class="pw-wrap">
+            <input type="password" id="regPassword" placeholder="Min. 8 characters" autocomplete="new-password" />
+            <button type="button" class="pw-eye" data-target="regPassword">👁</button>
+          </div>
+          <span class="field-err" id="errPw"></span>
+        </div>
+
+       <button type="submit" class="btn btn-primary full" data-i18n="createAccount">
+  Create Account
+</button>
+      </form>
+
+      <p class="auth-switch" data-i18n="haveAccount">Already have an account? <a href="login.html" data-i18n="signIn">Sign In</a></p>
+    </div>
+  </main>
+
+<script type="module" src="auth.js"></script>
+<script type="module" src="script.js"></script>
+ 
+</body>
+</html>

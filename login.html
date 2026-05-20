@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AmorWa – Login</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body class="page-auth">
+
+  <header class="top-bar">
+    <a href="index.html" class="back-btn">← <span data-i18n="back">Back</span></a>
+    <div class="logo-mark">AmorWa</div>
+    <div class="top-actions">
+      <button class="lang-btn" id="langToggle">🌐 <span id="langLabel">EN</span></button>
+      <button class="theme-btn" id="themeToggle">🌙</button>
+    </div>
+  </header>
+
+  <main class="auth-main">
+    <div class="auth-card">
+      <div class="auth-header">
+        <h2 data-i18n="welcomeBack">Welcome Back 💖</h2>
+        <p data-i18n="loginSub">Sign in to continue your journey</p>
+      </div>
+
+      <form class="auth-form" id="loginForm" novalidate>
+        <div class="form-group">
+          <label data-i18n="email">Email</label>
+          <input type="email" id="loginEmail" placeholder="you@example.com" autocomplete="email" />
+          <span class="field-err" id="errLoginEmail"></span>
+        </div>
+        <div class="form-group">
+          <label data-i18n="password">Password</label>
+          <div class="pw-wrap">
+            <input type="password" id="loginPassword" placeholder="Your password" autocomplete="current-password" />
+            <button type="button" class="pw-eye" data-target="loginPassword">👁</button>
+          </div>
+          <span class="field-err" id="errLoginPw"></span>
+        </div>
+
+        <div class="forgot-row">
+          <a href="#" class="forgot-link" data-i18n="forgotPassword">Forgot password?</a>
+        </div>
+
+        <button type="submit" class="btn btn-primary full" data-i18n="login">
+  Log In
+</button>
+
+<button type="button" class="btn btn-secondary full" onclick="resendVerificationEmail()">
+  Resend Verification Email
+</button>
+      </form>
+
+      <p class="auth-switch"><span data-i18n="noAccount">Don't have an account?</span> <a href="register.html" data-i18n="joinNow">Join Now</a></p>
+    </div>
+  </main>
+<script type="module" src="auth.js"></script>
+<script type="module" src="script.js"></script>
+</body>
+</html>

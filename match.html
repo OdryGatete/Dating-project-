@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AmorWa – It's a Match!</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body class="page-app page-match">
+
+  <header class="app-header">
+    <button class="icon-btn" onclick="history.back()">←</button>
+    <div class="logo-mark">AmorWa</div>
+    <div class="top-actions">
+      <button class="lang-btn" id="langToggle">🌐 <span id="langLabel">EN</span></button>
+      <button class="theme-btn" id="themeToggle">🌙</button>
+    </div>
+  </header>
+
+  <main class="match-main">
+    <div class="match-screen" id="matchScreen">
+      <!-- Confetti particles -->
+      <div class="confetti-container" id="confetti"></div>
+
+      <div class="match-badge" data-i18n="itsAMatch">💖 It's a Match!</div>
+      <p class="match-sub" data-i18n="matchSub">You and <strong id="matchName">Claudine</strong> liked each other</p>
+
+      <div class="match-avatars">
+        <div class="match-avatar you">
+          <div class="ma-img" style="background: linear-gradient(135deg,#6c63ff,#e879a0)">
+            <span>You</span>
+          </div>
+          <div class="match-heart">💖</div>
+        </div>
+        <div class="match-avatar them">
+          <div class="ma-img" id="matchAvatar" style="background: linear-gradient(135deg,#e879a0,#9b59b6)">
+            <span id="matchInitial">C</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="match-cta">
+        <a href="chat.html" class="btn btn-primary" data-i18n="startChat">Start Chat 💬</a>
+        <button class="btn btn-ghost" onclick="window.location.href='swipe.html'" data-i18n="keepSwiping">Keep Swiping</button>
+      </div>
+    </div>
+
+    <!-- Matches list section -->
+    <div class="matches-section">
+      <h3 data-i18n="yourMatches">Your Matches</h3>
+      <div class="matches-grid" id="matchesGrid">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+  </main>
+
+  <nav class="bottom-nav">
+    <a href="swipe.html" class="nav-item">
+      <span class="nav-icon">🔥</span>
+      <span class="nav-label" data-i18n="discover">Discover</span>
+    </a>
+    <a href="match.html" class="nav-item active">
+      <span class="nav-icon">💬</span>
+      <span class="nav-label" data-i18n="matches">Matches</span>
+    </a>
+    <a href="profile.html" class="nav-item">
+      <span class="nav-icon">👤</span>
+      <span class="nav-label" data-i18n="profile">Profile</span>
+    </a>
+  </nav>
+
+  <script type="module" src="script.js"></script>
+  <script src="match.js"></script>
+</body>
+</html>

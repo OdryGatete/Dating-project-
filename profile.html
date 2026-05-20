@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AmorWa – Profile Setup</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body class="page-auth">
+
+  <header class="top-bar">
+    <div class="logo-mark">AmorWa</div>
+    <div class="top-actions">
+      <button class="lang-btn" id="langToggle">🌐 <span id="langLabel">EN</span></button>
+      <button class="theme-btn" id="themeToggle">🌙</button>
+    </div>
+  </header>
+
+  <main class="auth-main">
+    <div class="auth-card profile-setup-card">
+      <div class="auth-header">
+        <h2 data-i18n="setupProfile">Set Up Your Profile</h2>
+        <p data-i18n="setupSub">Let others know who you are 🌟</p>
+      </div>
+
+      <!-- Avatar upload -->
+      <div class="avatar-upload-wrap">
+
+  <!-- Preview area -->
+  <div class="avatar-preview" id="avatarPreview">
+    <span class="avatar-initials" id="avatarInitials">?</span>
+    <img id="avatarImg" src="" alt="profile" style="display:none; width:120px; height:120px; border-radius:50%; object-fit:cover;" />
+  </div>
+
+  <!-- Click button -->
+  <label for="avatarInput" class="avatar-upload-btn">
+    📷 Upload Photo
+  </label>
+
+  <!-- Your hidden input (keep this) -->
+  <input type="file" id="avatarInput" accept="image/*" style="display:none" />
+
+</div>
+
+      <form class="auth-form" id="profileForm" novalidate>
+        <div class="form-group">
+          <label data-i18n="displayName">Display Name</label>
+          <input type="text" id="profileName" placeholder="e.g. Amara" />
+        </div>
+        <div class="form-group">
+          <label data-i18n="age">Age</label>
+          <input type="number" id="profileAge" placeholder="e.g. 24" min="18" max="80" />
+        </div>
+        <div class="form-group">
+          <label data-i18n="location">Location</label>
+          <select id="profileCity">
+            <option value="">-- Select City --</option>
+            <option>Kigali</option>
+            <option>Butare</option>
+            <option>Gisenyi</option>
+            <option>Ruhengeri</option>
+            <option>Cyangugu</option>
+            <option>Gitarama</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label data-i18n="bio">Short Bio</label>
+          <textarea id="profileBio" placeholder="Tell us something about yourself..." rows="3" maxlength="160"></textarea>
+          <span class="char-count" id="bioCount">0 / 160</span>
+        </div>
+
+        <div class="form-group">
+          <label data-i18n="interests">Interests (pick up to 5)</label>
+          <div class="interest-tags" id="interestTags">
+            <button type="button" class="tag">🎵 Music</button>
+            <button type="button" class="tag">📚 Reading</button>
+            <button type="button" class="tag">🏃 Fitness</button>
+            <button type="button" class="tag">🌍 Travel</button>
+            <button type="button" class="tag">🍳 Cooking</button>
+            <button type="button" class="tag">🎮 Gaming</button>
+            <button type="button" class="tag">🎨 Art</button>
+            <button type="button" class="tag">📸 Photography</button>
+            <button type="button" class="tag">🌿 Nature</button>
+            <button type="button" class="tag">💃 Dancing</button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary full" data-i18n="saveProfile">Save Profile & Start</button>
+      </form>
+    </div>
+  </main>
+
+  <script type="module" src="script.js"></script>
+   <script type="module" src="profile.js"></script>
+</body>
+</html>
