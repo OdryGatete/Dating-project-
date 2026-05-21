@@ -187,11 +187,11 @@ function initSwipePage() {
   const stack = document.getElementById('cardStack');
   if (!stack) return;
 
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      cardIndex = 0; // ✅ extra safety reset
-      loadProfiles();
-      bindSwipeButtons();
+  oonAuthStateChanged(auth, (user) => {
+  if (user) {
+    cardIndex = 0; // ✅ extra safety reset
+    loadProfiles();
+    bindSwipeButtons();
     } else {
       alert("You must log in first");
       window.location.href = "login.html";
@@ -258,8 +258,9 @@ function swipe(direction, card) {
   const profile = PROFILES[cardIndex];
 
  if (!profile) {
-    return renderCards(); // reload safely
-  }
+  return renderCards(); // reload safely
+}9 // ✅ prevents crash
+
   if (direction === 'right') {
   showToast(t('liked'));
 

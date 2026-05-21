@@ -258,8 +258,9 @@ function swipe(direction, card) {
   const profile = PROFILES[cardIndex];
 
  if (!profile) {
-    return renderCards(); // reload safely
-  }
+  return renderCards(); // reload safely
+}9 // ✅ prevents crash
+
   if (direction === 'right') {
   showToast(t('liked'));
 
