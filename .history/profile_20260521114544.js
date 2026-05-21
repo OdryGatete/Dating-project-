@@ -299,6 +299,10 @@ window.resetCards = function () {
 
 document.addEventListener("DOMContentLoaded", () => {
   initProfileSetup();
+});
+
+
+
   if (document.getElementById("cardStack")) {
     initSwipePage();
   }
