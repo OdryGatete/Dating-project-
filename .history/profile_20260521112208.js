@@ -13,7 +13,6 @@ import {
 ============================================================ */
 let PROFILES = [];
 let uploadedAvatarUrl = "";
-let isUploading = false;
 
 function initProfileSetup() {
   const avatarInput = document.getElementById('avatarInput');
@@ -24,7 +23,6 @@ function initProfileSetup() {
     avatarInput.addEventListener('change', async () => {
       const file = avatarInput.files[0];
       if (!file) return;
-        isUploading = true;
 
       // preview
       const reader = new FileReader();
@@ -48,17 +46,14 @@ function initProfileSetup() {
 
         const data = await res.json();
         if (data?.secure_url) {
-  uploadedAvatarUrl = data.secure_url;
-  isUploading = false;
-} else {
-  console.warn('Cloudinary upload did not return secure_url', data);
-        isUploading = false;
-}
-      }catch (err) {
-  isUploading = false;
-  console.error('Avatar upload failed', err);
-  alert('Photo upload failed. Please try again.');
-}
+          avatarImg.dataset.cloudUrl = data.secure_url;
+        } else {
+          console.warn('Cloudinary upload did not return secure_url', data);
+        }
+      } catch (err) {
+        console.error('Avatar upload failed', err);
+        alert('Photo upload failed. Please try again.');
+      }
     });
   }
 
@@ -81,7 +76,6 @@ function initProfileSetup() {
   });
 
   // save profile
- 
   const form = document.getElementById('profileForm');
   if (form) {
     form.addEventListener('submit', async (e) => {
@@ -100,7 +94,7 @@ function initProfileSetup() {
         age: document.getElementById('profileAge')?.value || '',
         city: document.getElementById('profileCity')?.value || '',
         bio: document.getElementById('profileBio')?.value || '',
-        avatar: uploadedAvatarUrl,
+        avatar: avatarImg?.dataset.cloudUrl || '',
         tags: [...document.querySelectorAll('.tag.selected')].map(t => t.textContent.trim())
       };
 
@@ -109,10 +103,6 @@ function initProfileSetup() {
         return;
       }
 
-     if (isUploading) {
-  alert("Please wait for image upload to finish.");
-  return;
-}
       try {
         await setDoc(doc(db, 'users', currentUser.uid), data);
         showToast(t('profileSaved'));
@@ -142,10 +132,6 @@ async function handleLike(targetUserId) {
 
 
   const currentUser = auth.currentUser;
-  if (!currentUser) {
-  alert("Authentication not ready. Please wait.");
-  return;
-}
 
   if (!currentUser) {
     alert("You must be logged in");
@@ -240,7 +226,7 @@ function createCard(profile) {
 
   card.innerHTML = `
     <div class="card-img-placeholder">
-      <img src="${profile.avatar || 'default-avatar.png'}" style="width:100%;height:100%;object-fit:cover;border-radius:15px;" />
+      <img src="${profile.avatar || ''}" style="width:100%;height:100%;object-fit:cover;border-radius:15px;" />
     </div>
     <div class="card-info">
       <h3>${profile.name}, ${profile.age}</h3>
@@ -299,11 +285,4 @@ window.resetCards = function () {
 
 document.addEventListener("DOMContentLoaded", () => {
   initProfileSetup();
-});
-
-
-
-  if (document.getElementById("cardStack")) {
-    initSwipePage();
-  }
 });

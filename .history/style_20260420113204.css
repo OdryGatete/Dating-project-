@@ -458,23 +458,6 @@ button { cursor: pointer; font-family: var(--font-body); }
   color: #fff;
 }
 
-.tag {
-  padding: 10px 16px;
-  border-radius: 20px;
-  border: 1px solid #555;
-  background: transparent;
-  color: white;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-.tag.selected {
-  background: #ff4d6d;
-  border-color: #ff4d6d;
-  color: white;
-  transform: scale(1.05);
-}
-
 /* ============================================================
    APP PAGES (swipe, match, chat)
    ============================================================ */
