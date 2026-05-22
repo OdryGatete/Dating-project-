@@ -1,25 +1,84 @@
+import { auth, db } from "./firebase.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  getDoc,
+  doc
+} from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
 /* ============================================================
    MATCH PAGE
 ============================================================ */
 
-function initMatchPage() {
+async function initMatchPage() {
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      window.location.href = 'login.html';
+      return;
+    }
+
+    await updateMatchHeader();
+    await loadMatches(user.uid);
+    spawnConfetti();
+  });
+}
+
+async function updateMatchHeader() {
   const lastMatch = JSON.parse(localStorage.getItem('amorwa_lastMatch') || 'null');
+  const screen = document.getElementById('matchScreen');
+  const nameEl = document.getElementById('matchName');
+  const avatarEl = document.getElementById('matchAvatar');
+  const initialEl = document.getElementById('matchInitial');
+  const startChatBtn = document.getElementById('startChatBtn');
 
-  if (lastMatch) {
-    const nameEl = document.getElementById('matchName');
-    const avatarEl = document.getElementById('matchAvatar');
-    const initialEl = document.getElementById('matchInitial');
-
-    if (nameEl) nameEl.textContent = lastMatch.name;
-    if (avatarEl) avatarEl.style.background = lastMatch.grad || "#e879a0";
-    if (initialEl) initialEl.textContent = lastMatch.name?.[0] || "?";
-
-    localStorage.setItem('amorwa_chatPartner', JSON.stringify(lastMatch));
+  if (!lastMatch || !startChatBtn) {
+    if (screen) screen.style.display = 'none';
+    return;
   }
 
-  spawnConfetti();
-  renderMatchesGrid();
+  if (nameEl) nameEl.textContent = lastMatch.name;
+  if (avatarEl) avatarEl.style.background = lastMatch.grad || '#e879a0';
+  if (initialEl) initialEl.textContent = lastMatch.name?.[0] || '?';
+  startChatBtn.href = 'chat.html?matchId=' + lastMatch.matchId;
+}
+
+async function loadMatches(currentUid) {
+  const grid = document.getElementById('matchesGrid');
+  if (!grid) return;
+
+  const matchesQuery = query(
+    collection(db, 'matches'),
+    where('users', 'array-contains', currentUid)
+  );
+
+  const snapshot = await getDocs(matchesQuery);
+  const cards = [];
+
+  for (const matchDoc of snapshot.docs) {
+    const matchData = matchDoc.data();
+    const partnerId = Array.isArray(matchData.users)
+      ? matchData.users.find((id) => id !== currentUid)
+      : null;
+
+    if (!partnerId) continue;
+
+    const partnerDoc = await getDoc(doc(db, 'users', partnerId));
+    if (!partnerDoc.exists()) continue;
+
+    const partner = partnerDoc.data();
+    cards.push({
+      matchId: matchDoc.id,
+      name: partner.name || 'Match',
+      age: partner.age || '',
+      grad: partner.grad || '#7c3aed',
+      avatar: partner.avatar || '',
+    });
+  }
+
+  renderMatchesGrid(cards);
 }
 
 /* ============================================================
@@ -34,16 +93,14 @@ function spawnConfetti() {
 
   for (let i = 0; i < 30; i++) {
     const piece = document.createElement('div');
-
     piece.className = 'confetti-piece';
-    piece.style.position = "absolute";
-    piece.style.left = Math.random() * 100 + "%";
-    piece.style.top = "-10px";
+    piece.style.position = 'absolute';
+    piece.style.left = Math.random() * 100 + '%';
+    piece.style.top = '-10px';
     piece.style.background = colors[Math.floor(Math.random() * colors.length)];
-    piece.style.width = "8px";
-    piece.style.height = "8px";
-    piece.style.borderRadius = Math.random() > 0.5 ? "50%" : "2px";
-
+    piece.style.width = '8px';
+    piece.style.height = '8px';
+    piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
     container.appendChild(piece);
   }
 }
@@ -52,105 +109,39 @@ function spawnConfetti() {
    MATCH GRID
 ============================================================ */
 
-function renderMatchesGrid() {
+function renderMatchesGrid(matches) {
   const grid = document.getElementById('matchesGrid');
   if (!grid) return;
 
-  const matches = JSON.parse(localStorage.getItem('amorwa_matches') || '[]');
-
-  const display = matches.length ? matches : [];
-
-  grid.innerHTML = display.map(p => `
-    <div class="match-card" onclick="openChat('${p.name}')">
-      <div class="mc-img" style="background:${p.grad || '#7c3aed'}">
-        ${p.name?.[0] || "?"}
-      </div>
-      <div class="mc-name">${p.name}, ${p.age || ""}</div>
-    </div>
-  `).join('');
-}
-
-/* ============================================================
-   CHAT SYSTEM
-============================================================ */
-
-const SEED_MESSAGES = [
-  { from: 'them', text: "Muraho! 👋 How are you?", time: "2:30 PM" },
-  { from: 'me', text: "I'm good 😊", time: "2:31 PM" }
-];
-
-function initChatPage() {
-  const partner = JSON.parse(localStorage.getItem('amorwa_chatPartner') || 'null');
-
-  const chatName = document.getElementById('chatName');
-  const avatar = document.querySelector('.chat-avatar-sm');
-
-  if (partner) {
-    if (chatName) chatName.textContent = partner.name;
-    if (avatar) {
-      avatar.textContent = partner.name?.[0] || "?";
-      avatar.style.background = partner.grad || "#7c3aed";
-    }
+  if (!matches || !matches.length) {
+    grid.innerHTML = '<div class="empty-state"><p>No matches yet. Keep swiping!</p></div>';
+    return;
   }
 
-  renderMessages();
+  grid.innerHTML = matches.map((p) => `
+    <div class="match-card" data-match-id="${p.matchId}" data-name="${p.name}" data-grad="${p.grad}">
+      <div class="mc-img" style="background:${p.grad}">${p.name?.[0] || '?'}</div>
+      <div class="mc-name">${p.name}, ${p.age || ''}</div>
+    </div>
+  `).join('');
 
-  const input = document.getElementById("chatInput");
-  const btn = document.getElementById("sendBtn");
-
-  if (btn) btn.onclick = sendMessage;
-  if (input) input.onkeydown = (e) => {
-    if (e.key === "Enter") sendMessage();
-  };
-}
-
-/* ============================================================
-   MESSAGES
-============================================================ */
-
-function renderMessages() {
-  const box = document.getElementById("chatMessages");
-  if (!box) return;
-
-  box.innerHTML = "";
-
-  SEED_MESSAGES.forEach(m => {
-    const div = document.createElement("div");
-    div.className = "bubble " + m.from;
-    div.textContent = m.text;
-    box.appendChild(div);
+  grid.querySelectorAll('.match-card').forEach((card) => {
+    card.addEventListener('click', () => {
+      openChat(card.dataset.matchId, card.dataset.name, card.dataset.grad);
+    });
   });
-}
-
-function sendMessage() {
-  const input = document.getElementById("chatInput");
-  const box = document.getElementById("chatMessages");
-
-  if (!input || !box) return;
-
-  const text = input.value.trim();
-  if (!text) return;
-
-  const msg = document.createElement("div");
-  msg.className = "bubble me";
-  msg.textContent = text;
-
-  box.appendChild(msg);
-  input.value = "";
-
-  setTimeout(() => {
-    const reply = document.createElement("div");
-    reply.className = "bubble them";
-    reply.textContent = "Nice! 😊";
-    box.appendChild(reply);
-  }, 1000);
 }
 
 /* ============================================================
    HELPERS
 ============================================================ */
 
-function openChat(name) {
-  localStorage.setItem("amorwa_chatPartner", JSON.stringify({ name }));
-  window.location.href = "chat.html";
+function openChat(matchId, name, grad) {
+  if (!matchId) return;
+  const partner = { name, grad, matchId };
+  localStorage.setItem('amorwa_chatPartner', JSON.stringify(partner));
+  window.location.href = 'chat.html?matchId=' + matchId;
 }
+
+window.initMatchPage = initMatchPage;
+window.openChat = openChat;
