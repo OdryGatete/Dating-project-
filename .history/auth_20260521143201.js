@@ -10,9 +10,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
 import {
-  collection,
   doc,
-  getDocs,
   setDoc
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 /* =========================
@@ -128,6 +126,8 @@ if (isAdmin) {
   window.location.href = "admin.html";
 
 } else {
+
+  alert("Login successful!");
 
   window.location.href = "swipe.html";
 }

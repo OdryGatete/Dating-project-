@@ -4,16 +4,13 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   sendEmailVerification,
-  sendPasswordResetEmail,
   GoogleAuthProvider,
   signInWithPopup
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
 import {
   collection,
-  doc,
-  getDocs,
-  setDoc
+  getDocs
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 /* =========================
    VALIDATION
@@ -129,6 +126,8 @@ if (isAdmin) {
 
 } else {
 
+  alert("Login successful!");
+
   window.location.href = "swipe.html";
 }
 
@@ -210,31 +209,6 @@ window.resendVerificationEmail = async function () {
   }
 };
 
-window.resetPassword = async function () {
-  try {
-    const email = document.getElementById("loginEmail")?.value.trim();
-
-    if (!email) {
-      alert("Please enter your email address first.");
-      return;
-    }
-
-    if (!isValidEmail(email)) {
-      alert("Please enter a valid email address.");
-      return;
-    }
-
-    await sendPasswordResetEmail(auth, email);
-    alert("Password reset email sent. Check your inbox or spam folder.");
-  } catch (err) {
-    console.error(err);
-    if (err.code === "auth/user-not-found") {
-      alert("No account found with that email.");
-    } else {
-      alert(err.message);
-    }
-  }
-};
 
 /* =========================
    GOOGLE LOGIN

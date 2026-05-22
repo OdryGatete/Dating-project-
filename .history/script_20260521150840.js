@@ -5,14 +5,12 @@ import {
   onSnapshot,
   query,
   orderBy,
-  serverTimestamp,
-  getDoc
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
 import {
   signOut,
-  deleteUser,
-  onAuthStateChanged
+  deleteUser
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
 import {
@@ -98,11 +96,6 @@ const TRANSLATIONS = {
     nameRequired:  "Name is required.",
     emailInvalid:  "Please enter a valid email.",
     pwShort:       "Password must be at least 8 characters.",
-    logout:        "Logout",
-    deleteAccount: "Delete Account",
-    reportUser:    "🚨 Report",
-    blockUser:     "⛔ Block",
-    unmatchUser:   "💔 Unmatch",
   },
   rw: {
     badge:         "App Nziza #1 yo mu Rwanda",
@@ -157,11 +150,6 @@ const TRANSLATIONS = {
     nameRequired:  "Izina rirakenewe.",
     emailInvalid:  "Injiza imeli yuzuye.",
     pwShort:       "Ijambo banga rigomba kuba nibura inyuguti 8.",
-    logout:        "Gusohoka muri konte",
-    deleteAccount: "Gusiba konte",
-    reportUser:    "🚨 Kurega",
-    blockUser:     "⛔ Guhagarika",
-    unmatchUser:   "💔 Gukuraho guhuza",
   },
   fr: {
     badge:         "L'App de Rencontres #1 au Rwanda",
@@ -216,11 +204,6 @@ const TRANSLATIONS = {
     nameRequired:  "Le nom est requis.",
     emailInvalid:  "Veuillez saisir un email valide.",
     pwShort:       "Le mot de passe doit comporter au moins 8 caractères.",
-    logout:        "Se déconnecter",
-    deleteAccount: "Supprimer le compte",
-    reportUser:    "🚨 Signaler",
-    blockUser:     "⛔ Bloquer",
-    unmatchUser:   "💔 Annuler la correspondance",
   }
 };
 
@@ -235,11 +218,10 @@ function t(key) {
 function applyTranslations() {
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
-    const translated = t(key);
     if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-      el.placeholder = translated;
+      el.placeholder = t(key);
     } else {
-      el.textContent = translated;
+      el.textContent = t(key);
     }
   });
   document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
@@ -258,8 +240,7 @@ window.sendMessage = async function () {
   const user = auth.currentUser;
   if (!user) return alert("Login first");
 
-  const input = document.getElementById("chatInput");
-  if (!input) return;
+  const input = document.getElementById("messageInput");
   const text = input.value.trim();
 
   if (!text || !matchId) return;
@@ -278,89 +259,33 @@ window.sendMessage = async function () {
 let unsubscribeChat = null;
 
 function initChatPage() {
-  const chatMessages = document.getElementById("chatMessages");
+  const chatBox = document.getElementById("chatBox");
 
-  if (!chatMessages || !matchId) return;
+  if (!chatBox || !matchId) return;
 
-  onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-      alert("Please log in first");
-      window.location.href = "login.html";
-      return;
-    }
+  const q = query(
+    collection(db, "matches", matchId, "messages"),
+    orderBy("createdAt", "asc")
+  );
 
-    const chatNameEl = document.getElementById("chatName");
-    const chatStatusEl = document.querySelector(".chat-status");
-    const chatAvatar = document.getElementById("chatAvatar");
+  if (unsubscribeChat) unsubscribeChat();
 
-    try {
-      const matchDoc = await getDoc(doc(db, "matches", matchId));
-      if (matchDoc.exists()) {
-        const matchData = matchDoc.data();
-        const otherUserId = Array.isArray(matchData.users)
-          ? matchData.users.find((uid) => uid !== user.uid) || matchData.users[0]
-          : null;
+  unsubscribeChat = onSnapshot(q, (snapshot) => {
+    chatBox.innerHTML = "";
 
-        if (otherUserId) {
-          const otherUserDoc = await getDoc(doc(db, "users", otherUserId));
-          if (otherUserDoc.exists()) {
-            const otherUser = otherUserDoc.data();
-            if (chatNameEl) chatNameEl.textContent = otherUser.name || "Match";
-            if (chatStatusEl) chatStatusEl.textContent = t("online");
-            if (chatAvatar) {
-              if (otherUser.avatar) {
-                chatAvatar.style.backgroundImage = `url(${otherUser.avatar})`;
-                chatAvatar.textContent = "";
-                chatAvatar.style.backgroundSize = "cover";
-                chatAvatar.style.backgroundPosition = "center";
-              } else if (otherUser.name) {
-                const initials = otherUser.name
-                  .split(" ")
-                  .map((part) => part[0])
-                  .join("")
-                  .slice(0, 2)
-                  .toUpperCase();
-                chatAvatar.textContent = initials;
-                chatAvatar.style.backgroundImage = "";
-              }
-            }
-          }
-        }
-      }
-    } catch (err) {
-      console.error(err);
-    }
+    snapshot.forEach((doc) => {
+      const msg = doc.data();
 
-    const q = query(
-      collection(db, "matches", matchId, "messages"),
-      orderBy("createdAt", "asc")
-    );
+      const div = document.createElement("div");
+      div.className =
+        msg.sender === auth.currentUser.uid ? "my-msg" : "their-msg";
 
-    if (unsubscribeChat) unsubscribeChat();
+      div.textContent = msg.text;
 
-    unsubscribeChat = onSnapshot(q, (snapshot) => {
-      chatMessages.innerHTML = "";
-
-      snapshot.forEach((doc) => {
-        const msg = doc.data();
-
-        const div = document.createElement("div");
-        div.className =
-          msg.sender === user.uid ? "bubble me" : "bubble them";
-        div.textContent = msg.text;
-
-        const time = document.createElement("div");
-        time.className = "bubble-time";
-        time.textContent = msg.createdAt?.toDate
-          ? new Date(msg.createdAt.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-          : "";
-
-        chatMessages.appendChild(div);
-        if (time.textContent) chatMessages.appendChild(time);
-      });
-
-      chatMessages.scrollTop = chatMessages.scrollHeight;
+      chatBox.appendChild(div);
     });
+
+    chatBox.scrollTop = chatBox.scrollHeight;
   });
 }
 
@@ -608,101 +533,6 @@ window.deleteAccount = async function () {
   }
 };
 
-/*report js */
-
-let selectedReportedUser = null;
-
-
-/* OPEN MODAL */
-window.openReportModal = function(userId){
-
-  selectedReportedUser = userId;
-
-  document.getElementById("reportModal")
-    .style.display = "flex";
-};
-
-
-/* CLOSE MODAL */
-window.closeReportModal = function(){
-
-  document.getElementById("reportModal")
-    .style.display = "none";
-};
-
-
-/* SUBMIT REPORT */
-window.submitReport = async function(){
-
-  try {
-
-    const reason =
-      document.getElementById("reportReason").value;
-
-    const details =
-      document.getElementById("reportDetails").value;
-
-    if (!reason) {
-      alert("Please select a reason.");
-      return;
-    }
-
-    await addDoc(collection(db, "reports"), {
-
-      reportedUser: selectedReportedUser,
-
-      reportedBy: auth.currentUser.uid,
-
-      reason: reason,
-
-      details: details,
-
-      status: "pending",
-
-      createdAt: serverTimestamp()
-    });
-
-    alert("Report submitted successfully.");
-
-    closeReportModal();
-
-  } catch(err){
-
-    console.error(err);
-    alert(err.message);
-  }
-};
-
-window.toggleCardMenu = function(btn){
-
-  const dropdown =
-    btn.nextElementSibling;
-
-  dropdown.classList.toggle("show");
-};
-
-/*chat window function*/
-window.toggleChatMenu = function(){
-
-  const menu =
-    document.getElementById("chatDropdown");
-
-  if (menu) menu.classList.toggle("show");
-};
-
-window.reportChatUser = function() {
-  alert("Report user from chat will open soon.");
-};
-
-window.blockUser = function() {
-  alert("Block user feature is not available yet.");
-};
-
-window.unmatchUser = function() {
-  alert("Unmatch feature is not available yet.");
-};
-
-
 /* ============================================================
    13. AVATAR INITIALS (from saved user)
    ============================================================ */
@@ -763,10 +593,6 @@ document.addEventListener('DOMContentLoaded', () => {
       break;
     case 'swipe': initSwipePage(); break;
     case 'match': initMatchPage(); break;
-    case 'chat': 
-      initChatPage();
-      // Reapply translations for chat page elements
-      setTimeout(() => applyTranslations(), 100);
-      break;
+    case 'chat': initChatPage(); break;
   }
 });

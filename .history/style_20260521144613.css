@@ -661,59 +661,6 @@ button { cursor: pointer; font-family: var(--font-body); }
 .empty-icon { font-size: 3.5rem; margin-bottom: 1rem; }
 .empty-state h3 { font-size: 1.4rem; margin-bottom: 0.5rem; }
 .empty-state p { color: var(--text2); margin-bottom: 1.5rem; }
-/*swipe record */
-
-.card-menu{
-  position:absolute;
-  top:12px;
-  right:12px;
-  z-index:20;
-}
-
-.menu-btn{
-  background:rgba(0,0,0,0.5);
-  border:none;
-  color:white;
-  width:36px;
-  height:36px;
-  border-radius:50%;
-  cursor:pointer;
-  font-size:1.1rem;
-}
-
-.card-dropdown{
-  display:none;
-  flex-direction:column;
-  position:absolute;
-  top:45px;
-  right:0;
-  background: var(--card, #1e1e1e);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius:12px;
-  padding:8px;
-  min-width:170px;
-  box-shadow:0 10px 30px rgba(0,0,0,0.3);
-  z-index: 220;
-}
-
-.card-dropdown.show{
-  display:flex;
-}
-
-.card-dropdown button{
-  background:none;
-  border:none;
-  color:white;
-  text-align:left;
-  padding:10px;
-  border-radius:8px;
-  cursor:pointer;
-}
-
-.card-dropdown button:hover{
-  background:rgba(255,255,255,0.1);
-}
-
 
 /* ============================================================
    MATCH PAGE
@@ -971,55 +918,6 @@ button { cursor: pointer; font-family: var(--font-body); }
   transition: transform var(--transition);
 }
 .emoji-btn:hover { transform: scale(1.1); }
-
-/* Chat dropdown CSS */ 
-.chat-menu{
-  position:relative;
-  z-index: 200;
-}
-
-.chat-menu-btn{
-  border:none;
-  background:none;
-  color: var(--text);
-  font-size:1.6rem;
-  cursor:pointer;
-}
-
-.chat-dropdown{
-  display:none;
-  position:absolute;
-  top:40px;
-  left:0;
-  background: var(--card, #1e1e1e);
-  border: 1px solid var(--border);
-  border-radius:12px;
-  min-width:200px;
-  padding:8px;
-  box-shadow:0 10px 30px rgba(0,0,0,0.3);
-  z-index: 250;
-}
-
-.chat-dropdown.show{
-  display:block;
-}
-
-.chat-dropdown button{
-  width:100%;
-  background:none;
-  border:none;
-  color: var(--text);
-  padding:12px;
-  text-align:left;
-  border-radius:8px;
-  cursor:pointer;
-  font-size:0.95rem;
-  line-height:1.4;
-}
-
-.chat-dropdown button:hover{
-  background:rgba(255,255,255,0.1);
-}
 
 /* ============================================================
    BOTTOM NAVIGATION

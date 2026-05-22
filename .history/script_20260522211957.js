@@ -100,9 +100,9 @@ const TRANSLATIONS = {
     pwShort:       "Password must be at least 8 characters.",
     logout:        "Logout",
     deleteAccount: "Delete Account",
-    reportUser:    "🚨 Report",
-    blockUser:     "⛔ Block",
-    unmatchUser:   "💔 Unmatch",
+    reportUser:    "Report",
+    blockUser:     "Block",
+    unmatchUser:   "Unmatch",
   },
   rw: {
     badge:         "App Nziza #1 yo mu Rwanda",
@@ -159,9 +159,9 @@ const TRANSLATIONS = {
     pwShort:       "Ijambo banga rigomba kuba nibura inyuguti 8.",
     logout:        "Gusohoka muri konte",
     deleteAccount: "Gusiba konte",
-    reportUser:    "🚨 Kurega",
-    blockUser:     "⛔ Guhagarika",
-    unmatchUser:   "💔 Gukuraho guhuza",
+    reportUser:    "Kurega",
+    blockUser:     "Guhagarika",
+    unmatchUser:   "Gukuraho guhuza",
   },
   fr: {
     badge:         "L'App de Rencontres #1 au Rwanda",
@@ -218,9 +218,9 @@ const TRANSLATIONS = {
     pwShort:       "Le mot de passe doit comporter au moins 8 caractères.",
     logout:        "Se déconnecter",
     deleteAccount: "Supprimer le compte",
-    reportUser:    "🚨 Signaler",
-    blockUser:     "⛔ Bloquer",
-    unmatchUser:   "💔 Annuler la correspondance",
+    reportUser:    "Signaler",
+    blockUser:     "Bloquer",
+    unmatchUser:   "Annuler la correspondance",
   }
 };
 
@@ -235,11 +235,10 @@ function t(key) {
 function applyTranslations() {
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
-    const translated = t(key);
     if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-      el.placeholder = translated;
+      el.placeholder = t(key);
     } else {
-      el.textContent = translated;
+      el.textContent = t(key);
     }
   });
   document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
@@ -763,10 +762,6 @@ document.addEventListener('DOMContentLoaded', () => {
       break;
     case 'swipe': initSwipePage(); break;
     case 'match': initMatchPage(); break;
-    case 'chat': 
-      initChatPage();
-      // Reapply translations for chat page elements
-      setTimeout(() => applyTranslations(), 100);
-      break;
+    case 'chat': initChatPage(); break;
   }
 });

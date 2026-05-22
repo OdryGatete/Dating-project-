@@ -21,18 +21,26 @@
 
   <div class="chat-dropdown" id="chatDropdown">
 
-     <button onclick="reportChatUser()" data-i18n="reportUser">Report</button>
-     <button onclick="blockUser()" data-i18n="blockUser">Block</button>
-     <button onclick="unmatchUser()" data-i18n="unmatchUser">Unmatch</button>
+     <button onclick="reportChatUser()">
+      🚨 Report
+     </button>
+
+     <button onclick="blockUser()">
+      ⛔ Block
+     </button>
+
+     <button onclick="unmatchUser()">
+      💔 Unmatch
+     </button>
 
   </div>
 
 </div>
     <button class="icon-btn" onclick="history.back()">←</button>
     <div class="chat-header-info">
-      <div class="chat-avatar-sm" id="chatAvatar">C</div>
+      <div class="chat-avatar-sm" style="background: linear-gradient(135deg,#e879a0,#9b59b6)">C</div>
       <div>
-        <div class="chat-name" id="chatName">Match</div>
+        <div class="chat-name" id="chatName">Claudine</div>
         <div class="chat-status" data-i18n="online">🟢 Online</div>
       </div>
     </div>
@@ -51,7 +59,10 @@
   <footer class="chat-footer">
     <button class="icon-btn emoji-btn" title="Emoji">😊</button>
     <input type="text" id="chatInput" class="chat-input" placeholder="Type a message..." data-i18n-placeholder="typeMessage" />
-    <button type="button" class="send-btn" onclick="sendMessage()">Send</button>
+    <div id="chatBox"></div>
+
+<input id="messageInput" placeholder="Type message..." />
+<button onclick="sendMessage()">Send</button>
   </footer>
 <script type="module" src="main.js"></script>
 </body>

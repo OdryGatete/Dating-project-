@@ -3,17 +3,17 @@ import { auth, db } from "./firebase.js";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  sendEmailVerification,
-  sendPasswordResetEmail,
+  sendEmailVerification
+} from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+
+import {
   GoogleAuthProvider,
   signInWithPopup
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
 import {
   collection,
-  doc,
-  getDocs,
-  setDoc
+  getDocs
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 /* =========================
    VALIDATION
@@ -129,6 +129,8 @@ if (isAdmin) {
 
 } else {
 
+  alert("Login successful!");
+
   window.location.href = "swipe.html";
 }
 
@@ -182,92 +184,5 @@ window.resendVerificationEmail = async function () {
 
       alert(err.message);
     }
-  }
-};
-
-/* =========================
-   RESEND VERIFICATION
-========================= */
-
-window.resendVerificationEmail = async function () {
-  try {
-
-    const user = auth.currentUser;
-
-    if (!user) {
-      alert("Login first.");
-      return;
-    }
-
-    await sendEmailVerification(user);
-
-    alert("Verification email sent again.");
-
-  } catch (err) {
-
-    console.error(err);
-    alert(err.message);
-  }
-};
-
-window.resetPassword = async function () {
-  try {
-    const email = document.getElementById("loginEmail")?.value.trim();
-
-    if (!email) {
-      alert("Please enter your email address first.");
-      return;
-    }
-
-    if (!isValidEmail(email)) {
-      alert("Please enter a valid email address.");
-      return;
-    }
-
-    await sendPasswordResetEmail(auth, email);
-    alert("Password reset email sent. Check your inbox or spam folder.");
-  } catch (err) {
-    console.error(err);
-    if (err.code === "auth/user-not-found") {
-      alert("No account found with that email.");
-    } else {
-      alert(err.message);
-    }
-  }
-};
-
-/* =========================
-   GOOGLE LOGIN
-========================= */
-
-window.googleLogin = async function () {
-
-  try {
-
-    const provider = new GoogleAuthProvider();
-
-    const result = await signInWithPopup(auth, provider);
-
-    const user = result.user;
-
-    await setDoc(
-      doc(db, "users", user.uid),
-      {
-        name: user.displayName || "User",
-        email: user.email,
-        photo: user.photoURL || "",
-        status: "active",
-        role: "user",
-        createdAt: new Date()
-      },
-      { merge: true }
-    );
-
-    window.location.href = "swipe.html";
-
-  } catch (err) {
-
-    console.error(err);
-    alert(err.message);
   }
 };

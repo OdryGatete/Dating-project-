@@ -10,18 +10,7 @@
 <body class="page-app">
 
   <header class="app-header">
-    <button id="settingsBtn" class="icon-btn" title="Filters">⚙️</button>
-    <div class="settings-menu" id="settingsMenu">
-
-  <button onclick="logoutUser()" data-i18n="logout">
-    Logout
-  </button>
-
-  <button onclick="deleteAccount()" class="danger-btn" data-i18n="deleteAccount">
-    Delete Account
-  </button>
-
-</div>
+    <button class="icon-btn" title="Filters">⚙️</button>
     <div class="logo-mark">AmorWa</div>
     <div class="top-actions">
       <button class="lang-btn" id="langToggle">🌐 <span id="langLabel">EN</span></button>
@@ -48,9 +37,6 @@
       <button class="action-btn pass-btn" id="passBtn" title="Pass">
         <span>✕</span>
       </button>
-
-    
-</button>
       <button class="action-btn super-btn" title="Super Like">
         <span>⭐</span>
       </button>
@@ -75,59 +61,6 @@
       <span class="nav-label" data-i18n="profile">Profile</span>
     </a>
   </nav>
-
-  <div class="report-modal" id="reportModal">
-
-  <div class="report-box">
-
-    <h3>Report User</h3>
-
-    <p>Select a reason:</p>
-
-    <select id="reportReason">
-
-      <option value="">Choose reason</option>
-
-      <option value="Harassment">Harassment</option>
-
-      <option value="Fake Profile">Fake Profile</option>
-
-      <option value="Spam">Spam</option>
-
-      <option value="Nudity">Nudity</option>
-
-      <option value="Scammer">Scammer</option>
-
-      <option value="Hate Speech">Hate Speech</option>
-
-      <option value="Violence">Violence</option>
-
-      <option value="Underage User">Underage User</option>
-
-      <option value="Other">Other</option>
-
-    </select>
-
-    <textarea
-      id="reportDetails"
-      placeholder="Additional details (optional)"
-    ></textarea>
-
-    <div class="report-actions">
-
-      <button onclick="closeReportModal()">
-        Cancel
-      </button>
-
-      <button onclick="submitReport()">
-        Submit Report
-      </button>
-
-    </div>
-
-  </div>
-
-</div>
 
   <script type="module" src="script.js"></script>
    <script type="module" src="profile.js"></script>

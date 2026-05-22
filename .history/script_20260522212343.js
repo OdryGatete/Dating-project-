@@ -763,10 +763,6 @@ document.addEventListener('DOMContentLoaded', () => {
       break;
     case 'swipe': initSwipePage(); break;
     case 'match': initMatchPage(); break;
-    case 'chat': 
-      initChatPage();
-      // Reapply translations for chat page elements
-      setTimeout(() => applyTranslations(), 100);
-      break;
+    case 'chat': initChatPage(); break;
   }
 });

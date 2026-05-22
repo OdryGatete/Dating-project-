@@ -49,16 +49,12 @@
   Create Account
 </button>
 
-        <button type="button" class="btn btn-primary full" onclick="googleLogin()" data-i18n="continueWithGoogle">
-          Continue with Google
-        </button>
+<button onclick="googleLogin()" class="google-btn">
+  Continue with Google
+</button>
       </form>
 
-      <p class="auth-switch">
-        <button type="button" class="btn btn-ghost full" onclick="window.location.href='login.html'" data-i18n="haveAccount">
-          Already have an account? Sign In
-        </button>
-      </p>
+      <p class="auth-switch" data-i18n="haveAccount">Already have an account? <a href="login.html" data-i18n="signIn">Sign In</a></p>
     </div>
   </main>
 

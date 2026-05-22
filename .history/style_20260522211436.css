@@ -990,7 +990,7 @@ button { cursor: pointer; font-family: var(--font-body); }
   display:none;
   position:absolute;
   top:40px;
-  left:0;
+  right:0;
   background: var(--card, #1e1e1e);
   border: 1px solid var(--border);
   border-radius:12px;

@@ -129,6 +129,8 @@ if (isAdmin) {
 
 } else {
 
+  alert("Login successful!");
+
   window.location.href = "swipe.html";
 }
 

@@ -235,11 +235,10 @@ function t(key) {
 function applyTranslations() {
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
-    const translated = t(key);
     if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-      el.placeholder = translated;
+      el.placeholder = t(key);
     } else {
-      el.textContent = translated;
+      el.textContent = t(key);
     }
   });
   document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
@@ -763,10 +762,6 @@ document.addEventListener('DOMContentLoaded', () => {
       break;
     case 'swipe': initSwipePage(); break;
     case 'match': initMatchPage(); break;
-    case 'chat': 
-      initChatPage();
-      // Reapply translations for chat page elements
-      setTimeout(() => applyTranslations(), 100);
-      break;
+    case 'chat': initChatPage(); break;
   }
 });
