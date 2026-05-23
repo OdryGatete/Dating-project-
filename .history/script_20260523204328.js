@@ -605,78 +605,24 @@ window.deleteAccount = async function () {
   try {
 
     const user = auth.currentUser;
-    if (!user) {
-      (window.showToast && window.showToast("No user is signed in.")) || alert("No user is signed in.");
-      return;
-    }
 
-    const uid = user.uid;
+    /* DELETE FIRESTORE USER */
+    await deleteDoc(doc(db, "users", user.uid));
 
-    // Helper to silently delete docs from a query snapshot
-    async function deleteSnapshotDocs(snap) {
-      const promises = [];
-      snap.forEach(d => promises.push(deleteDoc(doc(db, d.ref.parent.id, d.id))));
-      await Promise.all(promises);
-    }
-
-    // Delete likes where this user is sender or recipient
-    try {
-      const likesFrom = await getDocs(query(collection(db, "likes"), where("from", "==", uid)));
-      const likesTo = await getDocs(query(collection(db, "likes"), where("to", "==", uid)));
-      const delPromises = [];
-      likesFrom.forEach(d => delPromises.push(deleteDoc(doc(db, "likes", d.id))));
-      likesTo.forEach(d => delPromises.push(deleteDoc(doc(db, "likes", d.id))));
-      await Promise.all(delPromises);
-    } catch (e) {
-      console.warn('Error deleting likes for', uid, e);
-    }
-
-    // Delete matches that include this user
-    try {
-      const matchesSnap = await getDocs(query(collection(db, "matches"), where("users", "array-contains", uid)));
-      const delMatches = [];
-      matchesSnap.forEach(d => delMatches.push(deleteDoc(doc(db, "matches", d.id))));
-      await Promise.all(delMatches);
-    } catch (e) {
-      console.warn('Error deleting matches for', uid, e);
-    }
-
-    // Delete reports involving this user
-    try {
-      const rep1 = await getDocs(query(collection(db, "reports"), where("reportedUser", "==", uid)));
-      const rep2 = await getDocs(query(collection(db, "reports"), where("reportedBy", "==", uid)));
-      const delR = [];
-      rep1.forEach(d => delR.push(deleteDoc(doc(db, "reports", d.id))));
-      rep2.forEach(d => delR.push(deleteDoc(doc(db, "reports", d.id))));
-      await Promise.all(delR);
-    } catch (e) {
-      console.warn('Error deleting reports for', uid, e);
-    }
-
-    // Remove the user's profile document
-    try {
-      await deleteDoc(doc(db, "users", uid));
-    } catch (e) {
-      console.warn('Error deleting user document', uid, e);
-    }
-
-    // Clear local/session storage
     localStorage.clear();
     sessionStorage.clear();
 
-    // Delete auth account (may require recent login)
-    try {
-      await deleteUser(user);
-    } catch (err) {
-      // Re-throw to be handled below if it's a recent-login issue
-      throw err;
-    }
+    /* DELETE AUTH ACCOUNT */
+    await deleteUser(user);
 
     (window.showToast && window.showToast("Account deleted.")) || alert("Account deleted.");
+
     window.location.href = "index.html";
 
   } catch (err) {
+
     console.error(err);
+
     if (err.code === "auth/requires-recent-login") {
       (window.showToast && window.showToast("Please login again before deleting your account.")) || alert("Please login again before deleting your account.");
     } else {
