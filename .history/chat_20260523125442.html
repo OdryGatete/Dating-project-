@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AmorWa – Chat</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body class="page-app page-chat">
+
+  <header class="chat-header">
+    <div class="chat-menu">
+
+  <button
+    class="chat-menu-btn"
+    onclick="toggleChatMenu()"
+  >
+    ⋮
+  </button>
+
+  <div class="chat-dropdown" id="chatDropdown">
+
+     <button onclick="reportChatUser()" data-i18n="reportUser">Report</button>
+     <button onclick="blockUser()" data-i18n="blockUser">Block</button>
+     <button onclick="unmatchUser()" data-i18n="unmatchUser">Unmatch</button>
+
+  </div>
+
+</div>
+    <button class="icon-btn" onclick="goBackToMatches()">←</button>
+    <div class="chat-header-info">
+      <div class="chat-avatar-sm" id="chatAvatar">C</div>
+      <div>
+        <div class="chat-name" id="chatName">Match</div>
+        <div class="chat-status" data-i18n="online">🟢 Online</div>
+      </div>
+    </div>
+    <div class="top-actions">
+      <button class="lang-btn" id="langToggle">🌐 <span id="langLabel">EN</span></button>
+      <button class="theme-btn" id="themeToggle">🌙</button>
+    </div>
+  </header>
+
+  <main class="chat-main" id="chatMain">
+    <div class="chat-messages" id="chatMessages">
+      <!-- Seed messages rendered by JS -->
+    </div>
+  </main>
+
+  <footer class="chat-footer">
+    <button class="icon-btn emoji-btn" title="Emoji">😊</button>
+    <input type="text" id="chatInput" class="chat-input" placeholder="Type a message..." data-i18n-placeholder="typeMessage" />
+    <button type="button" class="send-btn" onclick="sendMessage()">Send</button>
+  </footer>
+<script type="module" src="main.js"></script>
+</body>
+</html>
