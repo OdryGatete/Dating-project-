@@ -21,8 +21,7 @@ import {
   query,
   orderBy,
   serverTimestamp,
-  addDoc,
-  getDoc
+  addDoc
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
 import {
@@ -35,10 +34,10 @@ import {
    2. GLOBAL VARIABLES
    ============================================================ */
 
-let usersTableBody = null;
-let reportsTableBody = null;
-let statCards = null;
-let adminInitialized = false;
+const usersTableBody = document.querySelector("#section-users tbody");
+const reportsTableBody = document.querySelector("#section-reports tbody");
+
+const statCards = document.querySelectorAll(".stat-value");
 
 let allUsers = [];
 let allReports = [];
@@ -46,197 +45,137 @@ let totalMatches = 0;
 
 
 /* ============================================================
-   3. INITIALIZE DOM REFERENCES (after page loads)
+   3. AUTH CHECK
    ============================================================ */
-
-function initializeDOMReferences() {
-  if (adminInitialized) return;
-  
-  usersTableBody = document.querySelector("#section-users tbody");
-  reportsTableBody = document.querySelector("#section-reports tbody");
-  statCards = document.querySelectorAll(".stat-value");
-  
-  if (!usersTableBody || !reportsTableBody) {
-    console.warn("⚠️ Admin dashboard DOM elements not found. Retrying...");
-    setTimeout(initializeDOMReferences, 500);
-    return;
-  }
-  
-  adminInitialized = true;
-  console.log("✅ Admin dashboard initialized");
-}
-
-// Wait for DOM to be ready
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initializeDOMReferences);
-} else {
-  setTimeout(initializeDOMReferences, 100);
-}
-
-
-/* ============================================================
-   4. AUTH CHECK
-   ============================================================ */
-
-let authCheckComplete = false;
 
 onAuthStateChanged(auth, async (user) => {
 
   /* NOT LOGGED IN */
+
   if (!user) {
-    console.log("🚪 No user logged in, redirecting to login...");
+
     window.location.href = "login.html";
     return;
   }
 
-  // Prevent multiple auth checks
-  if (authCheckComplete) {
-    console.log("✓ Auth already verified");
-    return;
-  }
-  authCheckComplete = true;
-
   try {
-    console.log("🔐 Verifying admin access for:", user.email);
-    
-    let isAdmin = false;
 
     /* GET ADMINS */
-    try {
-      const adminSnapshot = await getDocs(collection(db, "admins"));
-      
-      console.log("📋 Found", adminSnapshot.size, "admin records");
 
-      adminSnapshot.forEach((doc) => {
-        const adminData = doc.data();
-        if (adminData.email && adminData.email.toLowerCase() === user.email.toLowerCase()) {
-          isAdmin = true;
-          console.log("✅ User is admin!");
-        }
-      });
-    } catch (adminErr) {
-      console.warn("⚠️ Could not read admins collection:", adminErr.code, adminErr.message);
-      
-      // Fallback: check user doc for role = admin
-      try {
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        if (userDoc.exists() && userDoc.data().role === "admin") {
-          isAdmin = true;
-          console.log("✅ User is admin (via role field)");
-        }
-      } catch (e) {
-        console.warn("⚠️ Fallback check failed:", e.message);
+    const adminSnapshot =
+      await getDocs(collection(db, "admins"));
+
+    let isAdmin = false;
+
+    adminSnapshot.forEach((doc) => {
+
+      const adminData = doc.data();
+
+      if (adminData.email === user.email) {
+        isAdmin = true;
       }
-    }
+    });
 
     /* BLOCK NON ADMINS */
+
     if (!isAdmin) {
-      console.error("❌ Access denied - user is not admin");
       (window.showToast && window.showToast("Access denied. Admins only.")) || alert("Access denied. Admins only.");
-      setTimeout(() => {
-        window.location.href = "index.html";
-      }, 500);
+      window.location.href = "index.html";
       return;
     }
 
-    console.log("✅ Admin verified, loading dashboard...");
-    
-    // Initialize DOM after auth is confirmed
-    initializeDOMReferences();
-    
-    // Small delay to ensure DOM is ready
-    setTimeout(() => {
-      loadAdminProfile();
-      loadDashboard();
-      loadUsers();
-      loadReports();
-    }, 100);
+    /* LOAD ADMIN DASHBOARD */
+
+    loadDashboard();
+    loadUsers();
+    loadReports();
 
   } catch (error) {
-    console.error("❌ Auth error:", error);
+
+    console.error(error);
     (window.showToast && window.showToast("Failed to verify admin access.")) || alert("Failed to verify admin access.");
   }
 });
 
 /* ============================================================
-   5. LOAD DASHBOARD STATS
+   4. LOAD DASHBOARD STATS
    ============================================================ */
 
 async function loadDashboard() {
-  console.log("📊 Loading dashboard stats...");
-  
+
   /* USERS */
   onSnapshot(collection(db, "users"), (snapshot) => {
+
     allUsers = [];
+
     snapshot.forEach((docSnap) => {
       allUsers.push({
         id: docSnap.id,
         ...docSnap.data()
       });
     });
-    console.log("👥 Loaded", allUsers.length, "users");
+
     updateDashboardStats();
-  }, (error) => {
-    console.error("❌ Users listener error:", error);
   });
+
 
   /* REPORTS */
   onSnapshot(collection(db, "reports"), (snapshot) => {
+
     allReports = [];
+
     snapshot.forEach((docSnap) => {
       allReports.push({
         id: docSnap.id,
         ...docSnap.data()
       });
     });
-    console.log("📢 Loaded", allReports.length, "reports");
+
     updateDashboardStats();
-  }, (error) => {
-    console.error("❌ Reports listener error:", error);
   });
+
 
   /* MATCHES */
   onSnapshot(collection(db, "matches"), (snapshot) => {
+
     totalMatches = snapshot.size;
-    console.log("💖 Loaded", totalMatches, "matches");
+
     updateDashboardStats();
-  }, (error) => {
-    console.error("❌ Matches listener error:", error);
   });
 }
 
 
 /* ============================================================
-   6. UPDATE DASHBOARD CARDS
+   5. UPDATE DASHBOARD CARDS
    ============================================================ */
 
 function updateDashboardStats() {
+
   const totalUsers = allUsers.length;
-  const activeUsers = allUsers.filter(user => user.status !== "banned").length;
+
+  const activeUsers = allUsers.filter(user =>
+    user.status !== "banned"
+  ).length;
+
   const reportsCount = allReports.length;
 
-  if (statCards && statCards.length >= 4) {
-    if (statCards[0]) statCards[0].textContent = totalUsers;
-    if (statCards[1]) statCards[1].textContent = activeUsers;
-    if (statCards[2]) statCards[2].textContent = reportsCount;
-    if (statCards[3]) statCards[3].textContent = totalMatches;
-  }
+  
+  if (statCards[0]) statCards[0].textContent = totalUsers;
+if (statCards[1]) statCards[1].textContent = activeUsers;
+if (statCards[2]) statCards[2].textContent = reportsCount;
+if (statCards[3]) statCards[3].textContent = totalMatches;
 
-  updateSidebarStats(totalUsers, reportsCount);
-  loadActivityFeed();
+/* UPDATE SIDEBAR BADGES */
+updateSidebarStats(totalUsers, reportsCount);
+loadActivityFeed();
 }
 
 
 /* ============================================================
-   7. LOAD USERS TABLE
+   6. LOAD USERS TABLE
    ============================================================ */
 
 function loadUsers() {
-  if (!usersTableBody) {
-    console.warn("⚠️ usersTableBody not initialized");
-    setTimeout(loadUsers, 500);
-    return;
-  }
 
   const q = query(
     collection(db, "users"),
@@ -244,10 +183,11 @@ function loadUsers() {
   );
 
   onSnapshot(q, (snapshot) => {
-    console.log("📝 Rendering", snapshot.size, "users");
+
     usersTableBody.innerHTML = "";
 
     snapshot.forEach((docSnap) => {
+
       const user = docSnap.data();
       const userId = docSnap.id;
 
@@ -338,14 +278,12 @@ function loadUsers() {
     });
 
     attachUserActions();
-  }, (error) => {
-    console.error("❌ Users table listener error:", error);
   });
 }
 
 
 /* ============================================================
-   8. BAN / UNBAN / DELETE USERS
+   7. BAN / UNBAN / DELETE USERS
    ============================================================ */
 
 function attachUserActions() {
@@ -374,8 +312,7 @@ function attachUserActions() {
         );
 
       } catch (error) {
-        console.error("❌ Ban/unban error:", error);
-        showToast("Error updating user status");
+        console.error(error);
       }
     });
   });
@@ -401,8 +338,7 @@ function attachUserActions() {
         showToast("User deleted");
 
       } catch (error) {
-        console.error("❌ Delete user error:", error);
-        showToast("Error deleting user");
+        console.error(error);
       }
     });
   });
@@ -410,15 +346,10 @@ function attachUserActions() {
 
 
 /* ============================================================
-   9. LOAD REPORTS
+   8. LOAD REPORTS
    ============================================================ */
 
 function loadReports() {
-  if (!reportsTableBody) {
-    console.warn("⚠️ reportsTableBody not initialized");
-    setTimeout(loadReports, 500);
-    return;
-  }
 
   const q = query(
     collection(db, "reports"),
@@ -426,7 +357,7 @@ function loadReports() {
   );
 
   onSnapshot(q, (snapshot) => {
-    console.log("📝 Rendering", snapshot.size, "reports");
+
     reportsTableBody.innerHTML = "";
 
     snapshot.forEach((docSnap) => {
@@ -495,8 +426,6 @@ function loadReports() {
     });
 
     attachReportActions();
-  }, (error) => {
-    console.error("❌ Reports table listener error:", error);
   });
 }
 
@@ -572,7 +501,7 @@ function loadActivityFeed() {
     });
 }
 /* ============================================================
-   10. RESOLVE REPORTS
+   9. RESOLVE REPORTS
    ============================================================ */
 
 function attachReportActions() {
@@ -592,8 +521,7 @@ function attachReportActions() {
         showToast("Report resolved");
 
       } catch (error) {
-        console.error("❌ Resolve report error:", error);
-        showToast("Error resolving report");
+        console.error(error);
       }
     });
   });
@@ -601,7 +529,7 @@ function attachReportActions() {
 
 
 /* ============================================================
-   11. SEARCH USERS
+   10. SEARCH USERS
    ============================================================ */
 
 const userSearchInput = document.querySelector(
@@ -627,7 +555,7 @@ if (userSearchInput) {
 
 
 /* ============================================================
-   12. SEARCH REPORTS
+   11. SEARCH REPORTS
    ============================================================ */
 
 const reportSearchInput = document.querySelector(
@@ -653,7 +581,7 @@ if (reportSearchInput) {
 
 
 /* ============================================================
-   13. LOGOUT
+   12. LOGOUT
    ============================================================ */
 
 const logoutBtn = document.querySelector(
@@ -667,20 +595,20 @@ if (logoutBtn) {
     e.preventDefault();
 
     try {
-      console.log("🚪 Logging out...");
+
       await signOut(auth);
-      console.log("✅ Logged out successfully");
-      window.location.href = "index.html";
+
+      window.location.href = "login.html";
 
     } catch (error) {
-      console.error("❌ Logout error:", error);
+      console.error(error);
     }
   });
 }
 
 
 /* ============================================================
-   14. THEME TOGGLE
+   13. THEME TOGGLE
    ============================================================ */
 
 const themeBtn = document.querySelector(
@@ -725,24 +653,26 @@ if (themeBtn) {
 
 
 /* ============================================================
-   15. HELPER FUNCTIONS
+   14. HELPER FUNCTIONS
    ============================================================ */
 
 function getInitials(name) {
-  if (!name || typeof name !== 'string') return "?";
+
   return name
     .split(" ")
     .map(word => word[0])
     .join("")
     .toUpperCase()
-    .slice(0, 2) || "?";
+    .slice(0, 2);
 }
 
 
 function formatDate(timestamp) {
+
   if (!timestamp) return "N/A";
 
   try {
+
     const date =
       timestamp.toDate
         ? timestamp.toDate()
@@ -750,13 +680,13 @@ function formatDate(timestamp) {
 
     return date.toLocaleDateString();
 
-  } catch (e) {
-    console.warn("⚠️ Date format error:", e);
+  } catch {
+
     return "N/A";
   }
 }
-
 function updateSidebarStats(usersCount, reportsCount) {
+
   const usersBadge =
     document.getElementById("sidebarUsersCount");
 
@@ -764,6 +694,7 @@ function updateSidebarStats(usersCount, reportsCount) {
     document.getElementById("sidebarReportsCount");
 
   if (usersBadge) {
+
     usersBadge.textContent =
       usersCount >= 1000
         ? (usersCount / 1000).toFixed(1) + "k"
@@ -776,6 +707,7 @@ function updateSidebarStats(usersCount, reportsCount) {
 }
 
 function showToast(message) {
+
   let toast = document.createElement("div");
 
   toast.className = "admin-toast";
@@ -803,29 +735,32 @@ async function loadAdminProfile() {
 
   const user = auth.currentUser;
 
-  if (!user) {
-    console.warn("⚠️ No current user for admin profile");
-    return;
-  }
+  if (!user) return;
 
   try {
-    console.log("👤 Loading admin profile for:", user.email);
 
     const adminRef = doc(db, "admins", user.uid);
 
     const snap = await getDoc(adminRef);
 
-    let adminName = user.email?.split("@")[0] || "Admin";
+    let adminName = "Admin";
     let adminRole = "Super Admin";
 
     if (snap.exists()) {
+
       const data = snap.data();
-      adminName = data.name || adminName;
+
+      adminName = data.name || "Admin";
       adminRole = data.role || "Super Admin";
     }
 
     // Create initials
-    const initials = getInitials(adminName);
+    const initials = adminName
+      .split(" ")
+      .map(word => word[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
 
     /* =========================
        SIDEBAR PROFILE
@@ -864,33 +799,28 @@ async function loadAdminProfile() {
 
     if (topbarAvatar)
       topbarAvatar.textContent = initials;
-      
-    console.log("✅ Admin profile loaded:", adminName);
 
   } catch (error) {
-    console.warn("⚠️ Failed to load admin profile:", error.message);
-    // Not critical - use defaults
+
+    console.error("Failed to load admin profile:", error);
   }
 }
 
 /* ============================================================
-   16. OPTIONAL: CREATE TEST REPORT
+   15. OPTIONAL: CREATE TEST REPORT
    ============================================================ */
 
 window.createTestReport = async function () {
-  try {
-    await addDoc(collection(db, "reports"), {
-      reportedUser: "Test User",
-      reportedBy: "Admin",
-      reason: "Spam",
-      status: "pending",
-      createdAt: serverTimestamp()
-    });
 
-    showToast("Test report created");
-    console.log("✅ Test report created");
-  } catch (error) {
-    console.error("❌ Failed to create test report:", error);
-    showToast("Failed to create test report");
-  }
+  await addDoc(collection(db, "reports"), {
+
+    reportedUser: "Test User",
+    reportedBy: "Admin",
+    reason: "Spam",
+    status: "pending",
+    createdAt: serverTimestamp()
+
+  });
+
+  showToast("Test report created");
 };

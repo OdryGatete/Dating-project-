@@ -123,11 +123,8 @@ function renderMatchesGrid(matches) {
 
   grid.innerHTML = matches.map((p) => `
     <div class="match-card" data-match-id="${p.matchId}" data-name="${p.name}" data-grad="${p.grad}">
-      <div class="mc-img" style="background:${p.grad}">${p.avatar ? '' : (p.name?.[0] || '?')}</div>
-      <div class="mc-meta">
-        <div class="mc-name">${p.name}</div>
-        <div class="mc-sub">${p.age || ''}</div>
-      </div>
+      <div class="mc-img" style="background:${p.grad}">${p.name?.[0] || '?'}</div>
+      <div class="mc-name">${p.name}, ${p.age || ''}</div>
     </div>
   `).join('');
 

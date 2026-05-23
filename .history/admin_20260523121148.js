@@ -228,15 +228,10 @@ function updateDashboardStats() {
 
 
 /* ============================================================
-   7. LOAD USERS TABLE
+   6. LOAD USERS TABLE
    ============================================================ */
 
 function loadUsers() {
-  if (!usersTableBody) {
-    console.warn("⚠️ usersTableBody not initialized");
-    setTimeout(loadUsers, 500);
-    return;
-  }
 
   const q = query(
     collection(db, "users"),
@@ -244,10 +239,11 @@ function loadUsers() {
   );
 
   onSnapshot(q, (snapshot) => {
-    console.log("📝 Rendering", snapshot.size, "users");
+
     usersTableBody.innerHTML = "";
 
     snapshot.forEach((docSnap) => {
+
       const user = docSnap.data();
       const userId = docSnap.id;
 
@@ -338,14 +334,12 @@ function loadUsers() {
     });
 
     attachUserActions();
-  }, (error) => {
-    console.error("❌ Users table listener error:", error);
   });
 }
 
 
 /* ============================================================
-   8. BAN / UNBAN / DELETE USERS
+   7. BAN / UNBAN / DELETE USERS
    ============================================================ */
 
 function attachUserActions() {
@@ -374,8 +368,7 @@ function attachUserActions() {
         );
 
       } catch (error) {
-        console.error("❌ Ban/unban error:", error);
-        showToast("Error updating user status");
+        console.error(error);
       }
     });
   });
@@ -401,8 +394,7 @@ function attachUserActions() {
         showToast("User deleted");
 
       } catch (error) {
-        console.error("❌ Delete user error:", error);
-        showToast("Error deleting user");
+        console.error(error);
       }
     });
   });
@@ -410,15 +402,10 @@ function attachUserActions() {
 
 
 /* ============================================================
-   9. LOAD REPORTS
+   8. LOAD REPORTS
    ============================================================ */
 
 function loadReports() {
-  if (!reportsTableBody) {
-    console.warn("⚠️ reportsTableBody not initialized");
-    setTimeout(loadReports, 500);
-    return;
-  }
 
   const q = query(
     collection(db, "reports"),
@@ -426,7 +413,7 @@ function loadReports() {
   );
 
   onSnapshot(q, (snapshot) => {
-    console.log("📝 Rendering", snapshot.size, "reports");
+
     reportsTableBody.innerHTML = "";
 
     snapshot.forEach((docSnap) => {
@@ -495,8 +482,6 @@ function loadReports() {
     });
 
     attachReportActions();
-  }, (error) => {
-    console.error("❌ Reports table listener error:", error);
   });
 }
 
@@ -572,7 +557,7 @@ function loadActivityFeed() {
     });
 }
 /* ============================================================
-   10. RESOLVE REPORTS
+   9. RESOLVE REPORTS
    ============================================================ */
 
 function attachReportActions() {
@@ -592,8 +577,7 @@ function attachReportActions() {
         showToast("Report resolved");
 
       } catch (error) {
-        console.error("❌ Resolve report error:", error);
-        showToast("Error resolving report");
+        console.error(error);
       }
     });
   });
@@ -601,7 +585,7 @@ function attachReportActions() {
 
 
 /* ============================================================
-   11. SEARCH USERS
+   10. SEARCH USERS
    ============================================================ */
 
 const userSearchInput = document.querySelector(
@@ -627,7 +611,7 @@ if (userSearchInput) {
 
 
 /* ============================================================
-   12. SEARCH REPORTS
+   11. SEARCH REPORTS
    ============================================================ */
 
 const reportSearchInput = document.querySelector(
@@ -653,7 +637,7 @@ if (reportSearchInput) {
 
 
 /* ============================================================
-   13. LOGOUT
+   12. LOGOUT
    ============================================================ */
 
 const logoutBtn = document.querySelector(
@@ -667,20 +651,20 @@ if (logoutBtn) {
     e.preventDefault();
 
     try {
-      console.log("🚪 Logging out...");
+
       await signOut(auth);
-      console.log("✅ Logged out successfully");
-      window.location.href = "index.html";
+
+      window.location.href = "login.html";
 
     } catch (error) {
-      console.error("❌ Logout error:", error);
+      console.error(error);
     }
   });
 }
 
 
 /* ============================================================
-   14. THEME TOGGLE
+   13. THEME TOGGLE
    ============================================================ */
 
 const themeBtn = document.querySelector(
@@ -725,24 +709,26 @@ if (themeBtn) {
 
 
 /* ============================================================
-   15. HELPER FUNCTIONS
+   14. HELPER FUNCTIONS
    ============================================================ */
 
 function getInitials(name) {
-  if (!name || typeof name !== 'string') return "?";
+
   return name
     .split(" ")
     .map(word => word[0])
     .join("")
     .toUpperCase()
-    .slice(0, 2) || "?";
+    .slice(0, 2);
 }
 
 
 function formatDate(timestamp) {
+
   if (!timestamp) return "N/A";
 
   try {
+
     const date =
       timestamp.toDate
         ? timestamp.toDate()
@@ -750,13 +736,13 @@ function formatDate(timestamp) {
 
     return date.toLocaleDateString();
 
-  } catch (e) {
-    console.warn("⚠️ Date format error:", e);
+  } catch {
+
     return "N/A";
   }
 }
-
 function updateSidebarStats(usersCount, reportsCount) {
+
   const usersBadge =
     document.getElementById("sidebarUsersCount");
 
@@ -764,6 +750,7 @@ function updateSidebarStats(usersCount, reportsCount) {
     document.getElementById("sidebarReportsCount");
 
   if (usersBadge) {
+
     usersBadge.textContent =
       usersCount >= 1000
         ? (usersCount / 1000).toFixed(1) + "k"
@@ -776,6 +763,7 @@ function updateSidebarStats(usersCount, reportsCount) {
 }
 
 function showToast(message) {
+
   let toast = document.createElement("div");
 
   toast.className = "admin-toast";
@@ -803,29 +791,32 @@ async function loadAdminProfile() {
 
   const user = auth.currentUser;
 
-  if (!user) {
-    console.warn("⚠️ No current user for admin profile");
-    return;
-  }
+  if (!user) return;
 
   try {
-    console.log("👤 Loading admin profile for:", user.email);
 
     const adminRef = doc(db, "admins", user.uid);
 
     const snap = await getDoc(adminRef);
 
-    let adminName = user.email?.split("@")[0] || "Admin";
+    let adminName = "Admin";
     let adminRole = "Super Admin";
 
     if (snap.exists()) {
+
       const data = snap.data();
-      adminName = data.name || adminName;
+
+      adminName = data.name || "Admin";
       adminRole = data.role || "Super Admin";
     }
 
     // Create initials
-    const initials = getInitials(adminName);
+    const initials = adminName
+      .split(" ")
+      .map(word => word[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
 
     /* =========================
        SIDEBAR PROFILE
@@ -864,33 +855,28 @@ async function loadAdminProfile() {
 
     if (topbarAvatar)
       topbarAvatar.textContent = initials;
-      
-    console.log("✅ Admin profile loaded:", adminName);
 
   } catch (error) {
-    console.warn("⚠️ Failed to load admin profile:", error.message);
-    // Not critical - use defaults
+
+    console.error("Failed to load admin profile:", error);
   }
 }
 
 /* ============================================================
-   16. OPTIONAL: CREATE TEST REPORT
+   15. OPTIONAL: CREATE TEST REPORT
    ============================================================ */
 
 window.createTestReport = async function () {
-  try {
-    await addDoc(collection(db, "reports"), {
-      reportedUser: "Test User",
-      reportedBy: "Admin",
-      reason: "Spam",
-      status: "pending",
-      createdAt: serverTimestamp()
-    });
 
-    showToast("Test report created");
-    console.log("✅ Test report created");
-  } catch (error) {
-    console.error("❌ Failed to create test report:", error);
-    showToast("Failed to create test report");
-  }
+  await addDoc(collection(db, "reports"), {
+
+    reportedUser: "Test User",
+    reportedBy: "Admin",
+    reason: "Spam",
+    status: "pending",
+    createdAt: serverTimestamp()
+
+  });
+
+  showToast("Test report created");
 };

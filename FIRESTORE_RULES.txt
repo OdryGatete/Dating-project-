@@ -1,0 +1,111 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ============================================================
+    // ADMINS COLLECTION - Admins only can read/write
+    // ============================================================
+    match /admins/{document=**} {
+      // Allow authenticated users to read the admins collection (for login verification)
+      allow read: if request.auth != null;
+      
+      // Only admins can write to the admins collection
+      allow write: if isAdmin();
+    }
+
+    // ============================================================
+    // USERS COLLECTION - Each user owns their document
+    // ============================================================
+    match /users/{userId} {
+      // Allow users to read their own profile and other users' profiles
+      allow read: if request.auth != null;
+      
+      // Allow users to write only to their own document
+      allow write: if request.auth != null && request.auth.uid == userId;
+      
+      // Allow admins full access to users
+      allow read, write: if isAdmin();
+
+      // ============================================================
+      // MESSAGES SUBCOLLECTION (in users/{userId}/messages)
+      // ============================================================
+      match /messages/{messageId} {
+        // Allow users to read/write their own messages
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+        
+        // Allow admins full access
+        allow read, write: if isAdmin();
+      }
+    }
+
+    // ============================================================
+    // MATCHES COLLECTION - Users can read/write their own matches
+    // ============================================================
+    match /matches/{matchId} {
+      // Allow reading if user is part of the match
+      allow read: if request.auth != null && 
+                     (resource.data.users.hasAny([request.auth.uid]) || 
+                      request.resource.data.users.hasAny([request.auth.uid]));
+      
+      // Allow creating matches for authenticated users
+      allow create: if request.auth != null && 
+                       request.resource.data.users.hasAny([request.auth.uid]) &&
+                       request.resource.data.users.size() == 2;
+      
+      // Allow updating matches if user is part of it
+      allow update: if request.auth != null && 
+                       resource.data.users.hasAny([request.auth.uid]);
+      
+      // Allow admins full access
+      allow read, write: if isAdmin();
+
+      // ============================================================
+      // MESSAGES SUBCOLLECTION (in matches/{matchId}/messages)
+      // ============================================================
+      match /messages/{messageId} {
+        // Allow reading if user is part of the match
+        allow read: if request.auth != null && 
+                       get(/databases/$(database)/documents/matches/$(matchId)).data.users.hasAny([request.auth.uid]);
+        
+        // Allow writing messages if user is part of the match
+        allow write: if request.auth != null && 
+                        get(/databases/$(database)/documents/matches/$(matchId)).data.users.hasAny([request.auth.uid]) &&
+                        request.resource.data.senderId == request.auth.uid;
+        
+        // Allow admins full access
+        allow read, write: if isAdmin();
+      }
+    }
+
+    // ============================================================
+    // REPORTS COLLECTION - Any authenticated user can create reports
+    // ============================================================
+    match /reports/{reportId} {
+      // Allow users to read reports (for transparency)
+      allow read: if request.auth != null;
+      
+      // Allow users to create reports
+      allow create: if request.auth != null && 
+                       request.resource.data.reportedBy == request.auth.uid;
+      
+      // Users can only update their own reports
+      allow update: if request.auth != null && 
+                       resource.data.reportedBy == request.auth.uid;
+      
+      // Admins can read and update all reports
+      allow read, write: if isAdmin();
+    }
+
+    // ============================================================
+    // HELPER FUNCTION - Check if user is admin
+    // ============================================================
+    function isAdmin() {
+      // Check if user UID is in the admins collection
+      return exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+             // OR check if user has admin role in their profile
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+  }
+}

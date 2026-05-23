@@ -122,55 +122,30 @@ window.loginUser = async function () {
     }
 
     let isAdmin = false;
-    
-    // Check if user is admin
     try {
-      console.log("🔍 Checking admin status for:", email);
       const adminSnapshot = await getDocs(collection(db, "admins"));
-      
       adminSnapshot.forEach((docItem) => {
         const adminData = docItem.data();
-        console.log("📋 Admin doc email:", adminData.email);
-        if (adminData.email && adminData.email.toLowerCase() === email.toLowerCase()) {
+        if (adminData.email === email) {
           isAdmin = true;
-          console.log("✅ Admin match found!");
         }
       });
-      
-      if (adminSnapshot.empty) {
-        console.warn("⚠️ Admins collection is empty");
-      }
     } catch (err) {
-      console.error("❌ Admin check error:", err.code, err.message);
-      // If we get permission error, check the user's profile role field as fallback
-      try {
-        const userDoc = await getDocs(collection(db, "users"));
-        let foundUser = null;
-        userDoc.forEach((doc) => {
-          if (doc.data().email === email) {
-            foundUser = doc.data();
-          }
-        });
-        if (foundUser && foundUser.role === "admin") {
-          isAdmin = true;
-          console.log("✅ Admin found via user role field");
-        }
-      } catch (fallbackErr) {
-        console.warn("Fallback admin check also failed:", fallbackErr.message);
+      console.warn("Failed to read admins collection:", err);
+      if (!(err.code === "permission-denied" || /permission|insufficient/i.test(err.message))) {
+        throw err;
       }
     }
 
-    console.log("🎯 Final admin status:", isAdmin);
-    
     if (isAdmin) {
       authToaster("Admin login successful.");
-      setTimeout(() => safeRedirect("admin.html"), 800);
+      safeRedirect("admin.html");
     } else {
       authToaster("Welcome back!");
-      setTimeout(() => safeRedirect("swipe.html"), 800);
+      safeRedirect("swipe.html");
     }
   } catch (err) {
-    console.error("❌ Login error:", err);
+    console.error(err);
     authToaster(authErrorMessage(err));
   }
 };

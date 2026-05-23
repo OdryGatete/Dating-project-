@@ -721,15 +721,15 @@ window.goBackToMatches = function() {
 };
 
 window.reportChatUser = function() {
-  (window.showToast && window.showToast("Report user from chat will open soon.")) || alert("Report user from chat will open soon.");
+  alert("Report user from chat will open soon.");
 };
 
 window.blockUser = function() {
-  (window.showToast && window.showToast("Block user feature is not available yet.")) || alert("Block user feature is not available yet.");
+  alert("Block user feature is not available yet.");
 };
 
 window.unmatchUser = function() {
-  (window.showToast && window.showToast("Unmatch feature is not available yet.")) || alert("Unmatch feature is not available yet.");
+  alert("Unmatch feature is not available yet.");
 };
 
 

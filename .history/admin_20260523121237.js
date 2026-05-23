@@ -725,24 +725,26 @@ if (themeBtn) {
 
 
 /* ============================================================
-   15. HELPER FUNCTIONS
+   14. HELPER FUNCTIONS
    ============================================================ */
 
 function getInitials(name) {
-  if (!name || typeof name !== 'string') return "?";
+
   return name
     .split(" ")
     .map(word => word[0])
     .join("")
     .toUpperCase()
-    .slice(0, 2) || "?";
+    .slice(0, 2);
 }
 
 
 function formatDate(timestamp) {
+
   if (!timestamp) return "N/A";
 
   try {
+
     const date =
       timestamp.toDate
         ? timestamp.toDate()
@@ -750,13 +752,13 @@ function formatDate(timestamp) {
 
     return date.toLocaleDateString();
 
-  } catch (e) {
-    console.warn("⚠️ Date format error:", e);
+  } catch {
+
     return "N/A";
   }
 }
-
 function updateSidebarStats(usersCount, reportsCount) {
+
   const usersBadge =
     document.getElementById("sidebarUsersCount");
 
@@ -764,6 +766,7 @@ function updateSidebarStats(usersCount, reportsCount) {
     document.getElementById("sidebarReportsCount");
 
   if (usersBadge) {
+
     usersBadge.textContent =
       usersCount >= 1000
         ? (usersCount / 1000).toFixed(1) + "k"
@@ -776,6 +779,7 @@ function updateSidebarStats(usersCount, reportsCount) {
 }
 
 function showToast(message) {
+
   let toast = document.createElement("div");
 
   toast.className = "admin-toast";
@@ -803,29 +807,32 @@ async function loadAdminProfile() {
 
   const user = auth.currentUser;
 
-  if (!user) {
-    console.warn("⚠️ No current user for admin profile");
-    return;
-  }
+  if (!user) return;
 
   try {
-    console.log("👤 Loading admin profile for:", user.email);
 
     const adminRef = doc(db, "admins", user.uid);
 
     const snap = await getDoc(adminRef);
 
-    let adminName = user.email?.split("@")[0] || "Admin";
+    let adminName = "Admin";
     let adminRole = "Super Admin";
 
     if (snap.exists()) {
+
       const data = snap.data();
-      adminName = data.name || adminName;
+
+      adminName = data.name || "Admin";
       adminRole = data.role || "Super Admin";
     }
 
     // Create initials
-    const initials = getInitials(adminName);
+    const initials = adminName
+      .split(" ")
+      .map(word => word[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
 
     /* =========================
        SIDEBAR PROFILE
@@ -864,33 +871,28 @@ async function loadAdminProfile() {
 
     if (topbarAvatar)
       topbarAvatar.textContent = initials;
-      
-    console.log("✅ Admin profile loaded:", adminName);
 
   } catch (error) {
-    console.warn("⚠️ Failed to load admin profile:", error.message);
-    // Not critical - use defaults
+
+    console.error("Failed to load admin profile:", error);
   }
 }
 
 /* ============================================================
-   16. OPTIONAL: CREATE TEST REPORT
+   15. OPTIONAL: CREATE TEST REPORT
    ============================================================ */
 
 window.createTestReport = async function () {
-  try {
-    await addDoc(collection(db, "reports"), {
-      reportedUser: "Test User",
-      reportedBy: "Admin",
-      reason: "Spam",
-      status: "pending",
-      createdAt: serverTimestamp()
-    });
 
-    showToast("Test report created");
-    console.log("✅ Test report created");
-  } catch (error) {
-    console.error("❌ Failed to create test report:", error);
-    showToast("Failed to create test report");
-  }
+  await addDoc(collection(db, "reports"), {
+
+    reportedUser: "Test User",
+    reportedBy: "Admin",
+    reason: "Spam",
+    status: "pending",
+    createdAt: serverTimestamp()
+
+  });
+
+  showToast("Test report created");
 };

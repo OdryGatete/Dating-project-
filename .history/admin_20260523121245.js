@@ -803,29 +803,32 @@ async function loadAdminProfile() {
 
   const user = auth.currentUser;
 
-  if (!user) {
-    console.warn("⚠️ No current user for admin profile");
-    return;
-  }
+  if (!user) return;
 
   try {
-    console.log("👤 Loading admin profile for:", user.email);
 
     const adminRef = doc(db, "admins", user.uid);
 
     const snap = await getDoc(adminRef);
 
-    let adminName = user.email?.split("@")[0] || "Admin";
+    let adminName = "Admin";
     let adminRole = "Super Admin";
 
     if (snap.exists()) {
+
       const data = snap.data();
-      adminName = data.name || adminName;
+
+      adminName = data.name || "Admin";
       adminRole = data.role || "Super Admin";
     }
 
     // Create initials
-    const initials = getInitials(adminName);
+    const initials = adminName
+      .split(" ")
+      .map(word => word[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
 
     /* =========================
        SIDEBAR PROFILE
@@ -864,33 +867,28 @@ async function loadAdminProfile() {
 
     if (topbarAvatar)
       topbarAvatar.textContent = initials;
-      
-    console.log("✅ Admin profile loaded:", adminName);
 
   } catch (error) {
-    console.warn("⚠️ Failed to load admin profile:", error.message);
-    // Not critical - use defaults
+
+    console.error("Failed to load admin profile:", error);
   }
 }
 
 /* ============================================================
-   16. OPTIONAL: CREATE TEST REPORT
+   15. OPTIONAL: CREATE TEST REPORT
    ============================================================ */
 
 window.createTestReport = async function () {
-  try {
-    await addDoc(collection(db, "reports"), {
-      reportedUser: "Test User",
-      reportedBy: "Admin",
-      reason: "Spam",
-      status: "pending",
-      createdAt: serverTimestamp()
-    });
 
-    showToast("Test report created");
-    console.log("✅ Test report created");
-  } catch (error) {
-    console.error("❌ Failed to create test report:", error);
-    showToast("Failed to create test report");
-  }
+  await addDoc(collection(db, "reports"), {
+
+    reportedUser: "Test User",
+    reportedBy: "Admin",
+    reason: "Spam",
+    status: "pending",
+    createdAt: serverTimestamp()
+
+  });
+
+  showToast("Test report created");
 };

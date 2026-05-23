@@ -659,7 +659,7 @@ window.submitReport = async function(){
       document.getElementById("reportDetails").value;
 
     if (!reason) {
-      (window.showToast && window.showToast("Please select a reason.")) || alert("Please select a reason.");
+      alert("Please select a reason.");
       return;
     }
 
@@ -678,14 +678,14 @@ window.submitReport = async function(){
       createdAt: serverTimestamp()
     });
 
-    (window.showToast && window.showToast("Report submitted successfully.")) || alert("Report submitted successfully.");
+    alert("Report submitted successfully.");
 
     closeReportModal();
 
   } catch(err){
 
     console.error(err);
-    (window.showToast && window.showToast(err.message)) || alert(err.message);
+    alert(err.message);
   }
 };
 
@@ -721,15 +721,15 @@ window.goBackToMatches = function() {
 };
 
 window.reportChatUser = function() {
-  (window.showToast && window.showToast("Report user from chat will open soon.")) || alert("Report user from chat will open soon.");
+  alert("Report user from chat will open soon.");
 };
 
 window.blockUser = function() {
-  (window.showToast && window.showToast("Block user feature is not available yet.")) || alert("Block user feature is not available yet.");
+  alert("Block user feature is not available yet.");
 };
 
 window.unmatchUser = function() {
-  (window.showToast && window.showToast("Unmatch feature is not available yet.")) || alert("Unmatch feature is not available yet.");
+  alert("Unmatch feature is not available yet.");
 };
 
 

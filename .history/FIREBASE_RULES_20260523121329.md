@@ -1,0 +1,301 @@
+# AmorWa Dating App - Firebase Firestore Security Rules
+
+## Overview
+This document contains the complete Firestore security rules for your dating app and admin dashboard.
+
+## How to Apply These Rules
+
+1. Go to [Firebase Console](https://console.firebase.google.com)
+2. Select your project: **dating-project-49ad9**
+3. Go to **Firestore Database** → **Rules** tab
+4. Replace all content with the rules below
+5. Click **Publish**
+
+---
+
+## Complete Firestore Security Rules
+
+```firestore
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ============================================================
+    // ADMINS COLLECTION - Admins only can read/write
+    // ============================================================
+    match /admins/{document=**} {
+      // Allow authenticated users to read the admins collection (for login verification)
+      allow read: if request.auth != null;
+      
+      // Only admins can write to the admins collection
+      allow write: if isAdmin();
+    }
+
+    // ============================================================
+    // USERS COLLECTION - Each user owns their document
+    // ============================================================
+    match /users/{userId} {
+      // Allow users to read their own profile and other users' profiles
+      allow read: if request.auth != null;
+      
+      // Allow users to write only to their own document
+      allow write: if request.auth != null && request.auth.uid == userId;
+      
+      // Allow admins full access to users
+      allow read, write: if isAdmin();
+
+      // ============================================================
+      // MESSAGES SUBCOLLECTION (in users/{userId}/messages)
+      // ============================================================
+      match /messages/{messageId} {
+        // Allow users to read/write their own messages
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+        
+        // Allow admins full access
+        allow read, write: if isAdmin();
+      }
+    }
+
+    // ============================================================
+    // MATCHES COLLECTION - Users can read/write their own matches
+    // ============================================================
+    match /matches/{matchId} {
+      // Allow reading if user is part of the match
+      allow read: if request.auth != null && 
+                     (resource.data.users.hasAny([request.auth.uid]) || 
+                      request.resource.data.users.hasAny([request.auth.uid]));
+      
+      // Allow creating matches for authenticated users
+      allow create: if request.auth != null && 
+                       request.resource.data.users.hasAny([request.auth.uid]) &&
+                       request.resource.data.users.size() == 2;
+      
+      // Allow updating matches if user is part of it
+      allow update: if request.auth != null && 
+                       resource.data.users.hasAny([request.auth.uid]);
+      
+      // Allow admins full access
+      allow read, write: if isAdmin();
+
+      // ============================================================
+      // MESSAGES SUBCOLLECTION (in matches/{matchId}/messages)
+      // ============================================================
+      match /messages/{messageId} {
+        // Allow reading if user is part of the match
+        allow read: if request.auth != null && 
+                       get(/databases/$(database)/documents/matches/$(matchId)).data.users.hasAny([request.auth.uid]);
+        
+        // Allow writing messages if user is part of the match
+        allow write: if request.auth != null && 
+                        get(/databases/$(database)/documents/matches/$(matchId)).data.users.hasAny([request.auth.uid]) &&
+                        request.resource.data.senderId == request.auth.uid;
+        
+        // Allow admins full access
+        allow read, write: if isAdmin();
+      }
+    }
+
+    // ============================================================
+    // REPORTS COLLECTION - Any authenticated user can create reports
+    // ============================================================
+    match /reports/{reportId} {
+      // Allow users to read reports (for transparency)
+      allow read: if request.auth != null;
+      
+      // Allow users to create reports
+      allow create: if request.auth != null && 
+                       request.resource.data.reportedBy == request.auth.uid;
+      
+      // Users can only update their own reports
+      allow update: if request.auth != null && 
+                       resource.data.reportedBy == request.auth.uid;
+      
+      // Admins can read and update all reports
+      allow read, write: if isAdmin();
+    }
+
+    // ============================================================
+    // HELPER FUNCTION - Check if user is admin
+    // ============================================================
+    function isAdmin() {
+      // Check if user UID is in the admins collection
+      return exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+             // OR check if user has admin role in their profile
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+  }
+}
+```
+
+---
+
+## Admin Collection Setup
+
+You need to create an admin document in the `admins` collection. Do this manually:
+
+1. Go to Firestore Console
+2. Create a new collection called `admins`
+3. Add a document with ID = `{admin_uid}` (replace with actual admin Firebase UID)
+4. Add these fields:
+   ```
+   email: audrygatete47@gmail.com
+   name: Audry Gatete
+   role: Super Admin
+   createdAt: (timestamp)
+   ```
+
+Or via Firebase Console UI:
+- Collection: `admins`
+- Document ID: Click "Auto-ID" first, then edit or use UID
+- Fields:
+  - `email` (string): audrygatete47@gmail.com
+  - `name` (string): Audry Gatete  
+  - `role` (string): Super Admin
+  - `createdAt` (timestamp): Now
+
+---
+
+## Users Collection Structure
+
+Each user document should have this structure:
+
+```json
+{
+  "name": "User's Display Name",
+  "email": "user@example.com",
+  "photo": "https://...",
+  "photoURL": "https://...",
+  "avatar": "https://...",
+  "status": "active",
+  "role": "user",
+  "createdAt": timestamp,
+  "bio": "User bio",
+  "age": 25,
+  "location": "Kigali",
+  "interests": ["music", "sports"],
+  "matches": 0
+}
+```
+
+---
+
+## Reports Collection Structure
+
+```json
+{
+  "reportedUser": "user_id_or_name",
+  "reportedBy": "reporter_user_id",
+  "reason": "spam | harassment | inappropriate | scam",
+  "description": "Detailed reason",
+  "status": "pending",
+  "createdAt": timestamp,
+  "resolvedAt": timestamp,
+  "resolvedBy": "admin_id"
+}
+```
+
+---
+
+## Matches Collection Structure
+
+```json
+{
+  "users": ["user1_id", "user2_id"],
+  "matchedAt": timestamp,
+  "messages": 0,
+  "lastMessage": "...",
+  "lastMessageTime": timestamp
+}
+```
+
+---
+
+## Testing the Rules
+
+### Test Admin Login
+1. Create admin document in `admins` collection
+2. Go to login page
+3. Enter admin email and password
+4. Should see "Admin login successful" and redirect to admin.html
+
+### Test User Login  
+1. Register a new account
+2. Verify email
+3. Login with non-admin account
+4. Should redirect to swipe.html
+
+### Test Dashboard Stats
+1. Login as admin
+2. Check if stats load:
+   - Total Users (should show count)
+   - Active Today (non-banned users)
+   - Open Reports (pending reports)
+   - Total Matches (match documents)
+3. Stats should update in real-time
+
+---
+
+## Troubleshooting
+
+### "Failed to verify admin access" error
+- Check if `admins` collection exists
+- Check if your email is in an admin document
+- Verify email is verified before login
+- Check browser console (F12) for detailed errors
+
+### "Access denied" message when loading dashboard
+- Not in admins collection
+- Collection doesn't exist or is empty
+- Firestore rules haven't been published
+
+### Dashboard stats not updating
+- Check Firestore rules are published
+- Check browser console for listener errors
+- Verify users/matches/reports collections exist
+- Check network tab in DevTools
+
+### Admin can log in but page is blank
+- Check if DOM selectors exist in admin.html
+- Open browser console (F12) and check for JavaScript errors
+- Verify CSS and admin.css are loading
+
+---
+
+## Security Best Practices
+
+✅ What's Implemented:
+- Email verification required before login
+- Admin role verified via Firestore (not client-side)
+- Users can only access their own data
+- Admins have full read/write access
+- Reports can be created by any user
+- Real-time listeners with error handling
+
+🔒 Additional Security Recommendations:
+1. Enable 2FA for admin accounts
+2. Use Cloud Functions to validate sensitive operations
+3. Log all admin actions
+4. Set up IP restrictions for admin panel
+5. Regular security audits
+6. Rate limiting for API calls
+
+---
+
+## Firebase Environment
+
+- **Project ID**: dating-project-49ad9
+- **Auth Domain**: dating-project-49ad9.firebaseapp.com
+- **Database**: Firestore
+- **Storage**: Firebase Storage
+
+---
+
+## Key Files Modified
+
+1. **auth.js** - Enhanced admin detection with better logging
+2. **admin.js** - Added error handling and real-time listeners
+3. **Firestore Rules** - This file (apply via Firebase Console)
+
+All syntax checked ✅

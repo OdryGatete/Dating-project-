@@ -304,7 +304,7 @@ function initChatPage() {
 
   onAuthStateChanged(auth, async (user) => {
     if (!user) {
-      (window.showToast && window.showToast("Please log in first")) || alert("Please log in first");
+      alert("Please log in first");
       window.location.href = "login.html";
       return;
     }
@@ -586,7 +586,7 @@ window.logoutUser = async function () {
   } catch (err) {
 
     console.error(err);
-    (window.showToast && window.showToast(err.message)) || alert(err.message);
+    alert(err.message);
   }
 };
 
@@ -608,7 +608,7 @@ window.deleteAccount = async function () {
     /* DELETE AUTH ACCOUNT */
     await deleteUser(user);
 
-    (window.showToast && window.showToast("Account deleted.")) || alert("Account deleted.");
+    alert("Account deleted.");
 
     window.location.href = "index.html";
 
@@ -617,9 +617,14 @@ window.deleteAccount = async function () {
     console.error(err);
 
     if (err.code === "auth/requires-recent-login") {
-      (window.showToast && window.showToast("Please login again before deleting your account.")) || alert("Please login again before deleting your account.");
+
+      alert(
+        "Please login again before deleting your account."
+      );
+
     } else {
-      (window.showToast && window.showToast(err.message)) || alert(err.message);
+
+      alert(err.message);
     }
   }
 };
@@ -659,7 +664,7 @@ window.submitReport = async function(){
       document.getElementById("reportDetails").value;
 
     if (!reason) {
-      (window.showToast && window.showToast("Please select a reason.")) || alert("Please select a reason.");
+      alert("Please select a reason.");
       return;
     }
 
@@ -678,14 +683,14 @@ window.submitReport = async function(){
       createdAt: serverTimestamp()
     });
 
-    (window.showToast && window.showToast("Report submitted successfully.")) || alert("Report submitted successfully.");
+    alert("Report submitted successfully.");
 
     closeReportModal();
 
   } catch(err){
 
     console.error(err);
-    (window.showToast && window.showToast(err.message)) || alert(err.message);
+    alert(err.message);
   }
 };
 
@@ -721,15 +726,15 @@ window.goBackToMatches = function() {
 };
 
 window.reportChatUser = function() {
-  (window.showToast && window.showToast("Report user from chat will open soon.")) || alert("Report user from chat will open soon.");
+  alert("Report user from chat will open soon.");
 };
 
 window.blockUser = function() {
-  (window.showToast && window.showToast("Block user feature is not available yet.")) || alert("Block user feature is not available yet.");
+  alert("Block user feature is not available yet.");
 };
 
 window.unmatchUser = function() {
-  (window.showToast && window.showToast("Unmatch feature is not available yet.")) || alert("Unmatch feature is not available yet.");
+  alert("Unmatch feature is not available yet.");
 };
 
 
