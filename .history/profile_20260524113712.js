@@ -62,13 +62,9 @@ function initProfileSetup() {
 
   const tagButtons = document.querySelectorAll('.interest-tags .tag');
   tagButtons.forEach((btn) => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-
+    btn.addEventListener('click', () => {
       if (btn.classList.contains('selected')) {
         btn.classList.remove('selected');
-        btn.setAttribute('aria-pressed', 'false');
         return;
       }
 
@@ -79,7 +75,6 @@ function initProfileSetup() {
       }
 
       btn.classList.add('selected');
-      btn.setAttribute('aria-pressed', 'true');
     });
   });
 
