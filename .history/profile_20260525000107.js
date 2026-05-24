@@ -126,7 +126,7 @@ function initProfileSetup() {
         age: document.getElementById('profileAge')?.value || '',
         city: document.getElementById('profileCity')?.value || '',
         bio: document.getElementById('profileBio')?.value || '',
-        avatar: avatarImg?.dataset.cloudUrl || avatarImg?.src || '',
+        avatar: avatarImg?.dataset.cloudUrl || '',
         avatarPublicId: avatarImg?.dataset.cloudPublicId || '',
         status: 'active',
         deleted: false,

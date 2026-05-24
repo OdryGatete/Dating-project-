@@ -126,7 +126,76 @@ function initProfileSetup() {
         age: document.getElementById('profileAge')?.value || '',
         city: document.getElementById('profileCity')?.value || '',
         bio: document.getElementById('profileBio')?.value || '',
-        avatar: avatarImg?.dataset.cloudUrl || avatarImg?.src || '',
+        avatar: avatarImg?.dataset.cloudUrl || '',
+        avatarPublicId: avatarImg?.dataset.cloudPublicId || '',
+        status: 'active',
+        deleted: false,
+        tags: [...document.querySelectorAll('.tag.selected')].map(t => t.textContent.trim())
+      };
+
+      if (!data.name || !data.age || !data.city) {
+        alert('Please complete your name, age and location.');
+        return;
+      }
+
+      try {
+        await setDoc(doc(db, 'users', currentUser.uid), {
+          ...data,
+          createdAt: serverTimestamp()
+        });
+        showToast(typeof window.t === 'function' ? window.t('profileSaved') : 'Profile saved!');
+        window.location.href = 'swipe.html';
+      } catch (err) {
+        console.error('Failed to save profile', err);
+        alert('Unable to save profile right now. Please try again.');
+      }
+    });
+  }
+}
+
+  const tagButtons = document.querySelectorAll('.interest-tags .tag');
+  tagButtons.forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (btn.classList.contains('selected')) {
+        btn.classList.remove('selected');
+        btn.setAttribute('aria-pressed', 'false');
+        return;
+      }
+
+      const selectedCount = document.querySelectorAll('.interest-tags .tag.selected').length;
+      if (selectedCount >= 5) {
+        alert('You can choose up to 5 interests.');
+        return;
+      }
+
+      btn.classList.add('selected');
+      btn.setAttribute('aria-pressed', 'true');
+    });
+  });
+
+  // save profile
+  const form = document.getElementById('profileForm');
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        alert('Please log in first.');
+        window.location.href = 'login.html';
+        return;
+      }
+
+      const data = {
+        userId: currentUser.uid,
+        name: document.getElementById('profileName')?.value || '',
+        age: document.getElementById('profileAge')?.value || '',
+        city: document.getElementById('profileCity')?.value || '',
+        bio: document.getElementById('profileBio')?.value || '',
+        avatar: avatarImg?.dataset.cloudUrl || '',
         avatarPublicId: avatarImg?.dataset.cloudPublicId || '',
         status: 'active',
         deleted: false,
@@ -291,7 +360,7 @@ function renderCards() {
 function createCard(profile) {
   const card = document.createElement('div');
   card.className = 'swipe-card';
-  const avatarUrl = profile.avatar || profile.avatarUrl || profile.photo || profile.photoURL || profile.uploadedAvatarUrl || '';
+  const avatarUrl = profile.avatar || profile.photo || profile.photoURL || profile.uploadedAvatarUrl || '';
 
   card.innerHTML = `
     <div class="card-img-placeholder">
@@ -390,12 +459,11 @@ onAuthStateChanged(auth, async (user) => {
     if (cityEl && pdata.city) cityEl.value = pdata.city;
     if (bioEl && pdata.bio) bioEl.value = pdata.bio;
 
-    const avatarUrl = pdata.avatar || pdata.avatarUrl || pdata.photo || pdata.photoURL || pdata.uploadedAvatarUrl || '';
-    if (avatarImg && avatarUrl) {
-      avatarImg.src = avatarUrl;
+    if (avatarImg && pdata.avatar) {
+      avatarImg.src = pdata.avatar;
       avatarImg.style.display = 'block';
       if (avatarInitials) avatarInitials.style.display = 'none';
-      avatarImg.dataset.cloudUrl = avatarUrl;
+      avatarImg.dataset.cloudUrl = pdata.avatar;
     }
 
     // restore tags selection

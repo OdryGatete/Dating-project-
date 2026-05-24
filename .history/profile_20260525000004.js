@@ -126,7 +126,7 @@ function initProfileSetup() {
         age: document.getElementById('profileAge')?.value || '',
         city: document.getElementById('profileCity')?.value || '',
         bio: document.getElementById('profileBio')?.value || '',
-        avatar: avatarImg?.dataset.cloudUrl || avatarImg?.src || '',
+        avatar: avatarImg?.dataset.cloudUrl || '',
         avatarPublicId: avatarImg?.dataset.cloudPublicId || '',
         status: 'active',
         deleted: false,
@@ -390,12 +390,11 @@ onAuthStateChanged(auth, async (user) => {
     if (cityEl && pdata.city) cityEl.value = pdata.city;
     if (bioEl && pdata.bio) bioEl.value = pdata.bio;
 
-    const avatarUrl = pdata.avatar || pdata.avatarUrl || pdata.photo || pdata.photoURL || pdata.uploadedAvatarUrl || '';
-    if (avatarImg && avatarUrl) {
-      avatarImg.src = avatarUrl;
+    if (avatarImg && pdata.avatar) {
+      avatarImg.src = pdata.avatar;
       avatarImg.style.display = 'block';
       if (avatarInitials) avatarInitials.style.display = 'none';
-      avatarImg.dataset.cloudUrl = avatarUrl;
+      avatarImg.dataset.cloudUrl = pdata.avatar;
     }
 
     // restore tags selection
