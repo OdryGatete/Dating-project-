@@ -75,7 +75,6 @@ function initProfileSetup() {
   }
 
   const interestContainer = document.getElementById('interestTags');
-  const selectedInterests = new Set();
   if (interestContainer) {
     interestContainer.addEventListener('click', (e) => {
       const btn = e.target.closest('.tag');
@@ -83,22 +82,20 @@ function initProfileSetup() {
       e.preventDefault();
       e.stopPropagation();
 
-      const tagText = btn.textContent.trim();
       if (btn.classList.contains('selected')) {
         btn.classList.remove('selected');
         btn.setAttribute('aria-pressed', 'false');
-        selectedInterests.delete(tagText);
         return;
       }
 
-      if (selectedInterests.size >= 5) {
+      const selectedCount = interestContainer.querySelectorAll('.tag.selected').length;
+      if (selectedCount >= 5) {
         alert('You can choose up to 5 interests.');
         return;
       }
 
       btn.classList.add('selected');
       btn.setAttribute('aria-pressed', 'true');
-      selectedInterests.add(tagText);
     });
   }
 
@@ -124,10 +121,6 @@ function initProfileSetup() {
         return;
       }
 
-      const selectedTags = selectedInterests.size
-        ? Array.from(selectedInterests)
-        : [...document.querySelectorAll('.tag.selected')].map(t => t.textContent.trim());
-
       const data = {
         userId: currentUser.uid,
         name: document.getElementById('profileName')?.value || '',
@@ -138,7 +131,7 @@ function initProfileSetup() {
         avatarPublicId: avatarImg?.dataset.cloudPublicId || '',
         status: 'active',
         deleted: false,
-        tags: selectedTags
+        tags: [...document.querySelectorAll('.tag.selected')].map(t => t.textContent.trim())
       };
 
       if (!data.name || !data.age || !data.city) {
@@ -235,23 +228,6 @@ async function createMatch(user1, user2) {
 
 async function loadProfiles() {
   console.debug('[profile.js] loadProfiles()');
-
-  const matchedUserIds = new Set();
-  if (auth.currentUser) {
-    const matchesQuery = query(
-      collection(db, 'matches'),
-      where('users', 'array-contains', auth.currentUser.uid)
-    );
-    const matchesSnapshot = await getDocs(matchesQuery);
-    matchesSnapshot.forEach((matchDoc) => {
-      const matchData = matchDoc.data();
-      const otherId = Array.isArray(matchData.users)
-        ? matchData.users.find((uid) => uid !== auth.currentUser.uid)
-        : null;
-      if (otherId) matchedUserIds.add(otherId);
-    });
-  }
-
   const q = query(
     collection(db, "users"),
     where('status', '==', 'active')
@@ -276,7 +252,6 @@ async function loadProfiles() {
     // skip yourself
     if (auth.currentUser && data.userId === auth.currentUser.uid) return;
 
-    data.isMatched = matchedUserIds.has(data.userId);
     PROFILES.push(data);
   });
 
@@ -332,14 +307,13 @@ function createCard(profile) {
   card.innerHTML = `
     <div class="card-img-placeholder">
       <img src="${avatarUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:15px;" />
-      ${profile.isMatched ? '<div class="matched-badge">Matched</div>' : ''}
     </div>
     <div class="card-info">
       <h3>${profile.name}, ${profile.age}</h3>
       <p>📍 ${profile.city}</p>
       <p>${profile.bio}</p>
-      <div class="card-tags">
-        ${(profile.tags || []).map(t => `<span class="card-tag">${t}</span>`).join('')}
+      <div>
+        ${(profile.tags || []).map(t => `<span>${t}</span>`).join('')}
       </div>
     </div>
   `;
@@ -437,17 +411,18 @@ onAuthStateChanged(auth, async (user) => {
 
     // restore tags selection
     const tags = pdata.tags || [];
-    const selectedTags = new Set(tags);
-    document.querySelectorAll('.interest-tags .tag').forEach(btn => {
-      const txt = btn.textContent.trim();
-      if (selectedTags.has(txt)) {
-        btn.classList.add('selected');
-        btn.setAttribute('aria-pressed', 'true');
-      } else {
-        btn.classList.remove('selected');
-        btn.setAttribute('aria-pressed', 'false');
-      }
-    });
+    if (tags.length) {
+      document.querySelectorAll('.interest-tags .tag').forEach(btn => {
+        const txt = btn.textContent.trim();
+        if (tags.includes(txt)) {
+          btn.classList.add('selected');
+          btn.setAttribute('aria-pressed', 'true');
+        } else {
+          btn.classList.remove('selected');
+          btn.setAttribute('aria-pressed', 'false');
+        }
+      });
+    }
   } catch (e) {
     console.warn('Failed to load profile data for prefill', e);
   }

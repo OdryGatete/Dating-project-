@@ -332,14 +332,13 @@ function createCard(profile) {
   card.innerHTML = `
     <div class="card-img-placeholder">
       <img src="${avatarUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:15px;" />
-      ${profile.isMatched ? '<div class="matched-badge">Matched</div>' : ''}
     </div>
     <div class="card-info">
       <h3>${profile.name}, ${profile.age}</h3>
       <p>📍 ${profile.city}</p>
       <p>${profile.bio}</p>
-      <div class="card-tags">
-        ${(profile.tags || []).map(t => `<span class="card-tag">${t}</span>`).join('')}
+      <div>
+        ${(profile.tags || []).map(t => `<span>${t}</span>`).join('')}
       </div>
     </div>
   `;
