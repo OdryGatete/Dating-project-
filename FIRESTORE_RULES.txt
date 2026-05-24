@@ -79,6 +79,28 @@ service cloud.firestore {
     }
 
     // ============================================================
+    // LIKES COLLECTION - Users can create a like (from -> to)
+    // ============================================================
+    match /likes/{likeId} {
+      // Allow authenticated users to read likes (for simple debugging/UX)
+      allow read: if request.auth != null;
+
+      // Allow creating a like only when the "from" field equals the authenticated user
+      // and the document includes both 'from' and 'to' fields.
+      allow create: if request.auth != null &&
+                      request.resource.data.from == request.auth.uid &&
+                      request.resource.data.keys().hasAll(['from','to']);
+
+      // Allow deleting a like if the authenticated user is either the sender or recipient
+      allow delete: if request.auth != null && (
+        resource.data.from == request.auth.uid || resource.data.to == request.auth.uid
+      );
+
+      // Admins have full access
+      allow read, write: if isAdmin();
+    }
+
+    // ============================================================
     // REPORTS COLLECTION - Any authenticated user can create reports
     // ============================================================
     match /reports/{reportId} {
