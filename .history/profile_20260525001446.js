@@ -224,7 +224,6 @@ async function createMatch(user1, user2) {
 }
 
 async function loadProfiles() {
-  console.debug('[profile.js] loadProfiles()');
   const q = query(
     collection(db, "users"),
     where('status', '==', 'active')
@@ -258,7 +257,6 @@ async function loadProfiles() {
     return bTime - aTime;
   });
 
-  console.debug('[profile.js] loadProfiles() loaded profiles', PROFILES.length, PROFILES.map(p => p.userId));
   renderCards();
 }
 

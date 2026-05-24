@@ -258,7 +258,6 @@ async function loadProfiles() {
     return bTime - aTime;
   });
 
-  console.debug('[profile.js] loadProfiles() loaded profiles', PROFILES.length, PROFILES.map(p => p.userId));
   renderCards();
 }
 

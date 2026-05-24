@@ -19,7 +19,6 @@ import {
 let PROFILES = [];
 
 function initProfileSetup() {
-  console.debug('[profile.js] initProfileSetup()');
   const avatarInput = document.getElementById('avatarInput');
   const avatarImg = document.getElementById('avatarImg');
   const avatarInitials = document.getElementById('avatarInitials');
@@ -224,7 +223,6 @@ async function createMatch(user1, user2) {
 }
 
 async function loadProfiles() {
-  console.debug('[profile.js] loadProfiles()');
   const q = query(
     collection(db, "users"),
     where('status', '==', 'active')
@@ -252,13 +250,6 @@ async function loadProfiles() {
     PROFILES.push(data);
   });
 
-  PROFILES.sort((a, b) => {
-    const aTime = a.createdAt?.toMillis?.() || a.createdAt || 0;
-    const bTime = b.createdAt?.toMillis?.() || b.createdAt || 0;
-    return bTime - aTime;
-  });
-
-  console.debug('[profile.js] loadProfiles() loaded profiles', PROFILES.length, PROFILES.map(p => p.userId));
   renderCards();
 }
 
@@ -411,13 +402,8 @@ onAuthStateChanged(auth, async (user) => {
     if (tags.length) {
       document.querySelectorAll('.interest-tags .tag').forEach(btn => {
         const txt = btn.textContent.trim();
-        if (tags.includes(txt)) {
-          btn.classList.add('selected');
-          btn.setAttribute('aria-pressed', 'true');
-        } else {
-          btn.classList.remove('selected');
-          btn.setAttribute('aria-pressed', 'false');
-        }
+        if (tags.includes(txt)) btn.classList.add('selected');
+        else btn.classList.remove('selected');
       });
     }
   } catch (e) {
