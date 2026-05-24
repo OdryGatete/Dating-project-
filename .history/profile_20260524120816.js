@@ -8,7 +8,6 @@ import {
   collection,
   getDocs,
   query,
-  where,
   orderBy,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";

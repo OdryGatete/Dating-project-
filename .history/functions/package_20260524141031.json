@@ -1,0 +1,13 @@
+{
+  "name": "dating-project-functions",
+  "description": "Firebase backend cleanup functions for AmorWa dating app",
+  "private": true,
+  "engines": {
+    "node": "18"
+  },
+  "dependencies": {
+    "firebase-admin": "^11.0.1",
+    "firebase-functions": "^4.4.0",
+    "node-fetch": "^2.6.12"
+  }
+}

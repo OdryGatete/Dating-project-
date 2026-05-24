@@ -8,7 +8,6 @@ import {
   collection,
   getDocs,
   query,
-  where,
   orderBy,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
@@ -107,8 +106,6 @@ function initProfileSetup() {
         bio: document.getElementById('profileBio')?.value || '',
         avatar: avatarImg?.dataset.cloudUrl || '',
         avatarPublicId: avatarImg?.dataset.cloudPublicId || '',
-        status: 'active',
-        deleted: false,
         tags: [...document.querySelectorAll('.tag.selected')].map(t => t.textContent.trim())
       };
 

@@ -8,7 +8,6 @@ import {
   collection,
   getDocs,
   query,
-  where,
   orderBy,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
@@ -107,8 +106,6 @@ function initProfileSetup() {
         bio: document.getElementById('profileBio')?.value || '',
         avatar: avatarImg?.dataset.cloudUrl || '',
         avatarPublicId: avatarImg?.dataset.cloudPublicId || '',
-        status: 'active',
-        deleted: false,
         tags: [...document.querySelectorAll('.tag.selected')].map(t => t.textContent.trim())
       };
 
@@ -202,11 +199,7 @@ async function createMatch(user1, user2) {
 }
 
 async function loadProfiles() {
-  const q = query(
-    collection(db, "users"),
-    where('status', '==', 'active'),
-    orderBy('createdAt', 'desc')
-  );
+  const q = query(collection(db, "users"), orderBy('createdAt', 'desc'));
   const querySnapshot = await getDocs(q);
 
   PROFILES = [];
@@ -216,13 +209,11 @@ async function loadProfiles() {
     const data = docSnap.data();
     if (!data) return; // skip empty
 
-    // exclude deleted/inactive users and malformed docs
+    // support a 'deleted' flag if present (safer than relying on delete timing)
     if (data.deleted) return;
-    if (data.status !== 'active') return;
-    if (!data.userId || !data.name) return;
 
-    const avatarUrl = data.avatar || data.photo || data.photoURL || data.uploadedAvatarUrl || '';
-    if (!avatarUrl) return;
+    // skip malformed docs
+    if (!data.userId || !data.name) return;
 
     // skip yourself
     if (auth.currentUser && data.userId === auth.currentUser.uid) return;
