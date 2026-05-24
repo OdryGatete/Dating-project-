@@ -4,6 +4,7 @@ const fetch = require('node-fetch');
 
 admin.initializeApp();
 const db = admin.firestore();
+const bucket = admin.storage().bucket();
 
 // Expect these env vars to be set via `firebase functions:config:set cloudinary.key="..." cloudinary.secret="..." cloudinary.cloud_name="..."`
 const CLOUD_NAME = functions.config().cloudinary && functions.config().cloudinary.cloud_name;
@@ -39,6 +40,38 @@ async function deleteCloudinary(publicId) {
   }
 }
 
+async function deleteUserStorageFiles(uid) {
+  if (!uid) return;
+
+  try {
+    const prefixes = [`profileImages/${uid}/`];
+    let deletedCount = 0;
+
+    for (const prefix of prefixes) {
+      const [files] = await bucket.getFiles({ prefix });
+      for (const file of files) {
+        await file.delete();
+        deletedCount++;
+        console.log('Deleted storage file:', file.name);
+      }
+    }
+
+    // Also remove any files containing the UID in the path, to catch alternate folders
+    const [allFiles] = await bucket.getFiles();
+    for (const file of allFiles) {
+      if (file.name.includes(uid) && !file.name.startsWith(`profileImages/${uid}/`)) {
+        await file.delete();
+        deletedCount++;
+        console.log('Deleted storage file matching UID:', file.name);
+      }
+    }
+
+    console.log(`Deleted ${deletedCount} storage files for user ${uid}`);
+  } catch (err) {
+    console.warn('Failed to delete storage files for', uid, err.message || err);
+  }
+}
+
 exports.onUserDeleted = functions.auth.user().onDelete(async (user) => {
   try {
     const uid = user.uid;
@@ -58,6 +91,9 @@ exports.onUserDeleted = functions.auth.user().onDelete(async (user) => {
     } else {
       console.log('No user doc found for', uid);
     }
+
+    // Cleanup Storage files for this user
+    await deleteUserStorageFiles(uid);
 
     // Cleanup likes, matches, reports that reference this uid
     const batch = db.batch();
