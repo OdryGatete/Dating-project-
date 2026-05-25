@@ -377,22 +377,14 @@ async function loadProfiles() {
 
 function initSwipePage() {
   const stack = document.getElementById('cardStack');
-  if (!stack) {
-    console.warn('[profile.js] cardStack element not found');
-    return;
-  }
-
-  console.debug('[profile.js] initSwipePage() - setting up auth listener');
+  if (!stack) return;
 
   onAuthStateChanged(auth, (user) => {
     if (user) {
-      console.debug('[profile.js] User authenticated:', user.uid);
-      cardIndex = 0;
-      console.debug('[profile.js] Calling loadProfiles...');
+      cardIndex = 0; // extra safety reset
       loadProfiles();
       bindSwipeButtons();
     } else {
-      console.warn('[profile.js] No authenticated user, redirecting to login');
       alert("You must log in first");
       window.location.href = "login.html";
     }
@@ -548,20 +540,4 @@ onAuthStateChanged(auth, async (user) => {
 
 window.initProfileSetup = initProfileSetup;
 window.initSwipePage = initSwipePage;
-
-// Auto-initialize swipe page if this script is loaded on swipe.html
-if (window.location.pathname.endsWith('swipe.html')) {
-  console.debug('[profile.js] Auto-initializing swipe page');
-  document.addEventListener('DOMContentLoaded', () => {
-    console.debug('[profile.js] DOM ready, calling initSwipePage');
-    initSwipePage();
-  });
-  // Fallback if DOM is already loaded
-  if (document.readyState === 'loading') {
-    console.debug('[profile.js] Document still loading');
-  } else {
-    console.debug('[profile.js] Document already loaded, calling initSwipePage immediately');
-    initSwipePage();
-  }
-}
 

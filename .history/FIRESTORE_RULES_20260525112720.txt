@@ -82,13 +82,14 @@ service cloud.firestore {
       // MESSAGES SUBCOLLECTION (in matches/{matchId}/messages)
       // ============================================================
       match /messages/{messageId} {
-        // Allow reading messages if the user is part of the match
+        // Allow reading messages if the match exists and the user is part of it
         allow read: if request.auth != null &&
                        exists(/databases/$(database)/documents/matches/$(matchId)) &&
                        request.auth.uid in get(/databases/$(database)/documents/matches/$(matchId)).data.users;
 
-        // Allow writing messages if the user is part of the match
-        // Accept either `sender` or `senderId` to match existing client behavior
+        // Allow writing messages if the match exists, the user is part of it,
+        // and the sender field provided by the client matches the authenticated user.
+        // Accept either `sender` or `senderId` to match existing client behavior.
         allow write: if request.auth != null &&
                         exists(/databases/$(database)/documents/matches/$(matchId)) &&
                         request.auth.uid in get(/databases/$(database)/documents/matches/$(matchId)).data.users &&

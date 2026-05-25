@@ -549,19 +549,3 @@ onAuthStateChanged(auth, async (user) => {
 window.initProfileSetup = initProfileSetup;
 window.initSwipePage = initSwipePage;
 
-// Auto-initialize swipe page if this script is loaded on swipe.html
-if (window.location.pathname.endsWith('swipe.html')) {
-  console.debug('[profile.js] Auto-initializing swipe page');
-  document.addEventListener('DOMContentLoaded', () => {
-    console.debug('[profile.js] DOM ready, calling initSwipePage');
-    initSwipePage();
-  });
-  // Fallback if DOM is already loaded
-  if (document.readyState === 'loading') {
-    console.debug('[profile.js] Document still loading');
-  } else {
-    console.debug('[profile.js] Document already loaded, calling initSwipePage immediately');
-    initSwipePage();
-  }
-}
-

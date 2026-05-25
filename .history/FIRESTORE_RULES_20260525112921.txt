@@ -84,6 +84,7 @@ service cloud.firestore {
       match /messages/{messageId} {
         // Allow reading messages if the user is part of the match
         allow read: if request.auth != null &&
+                       resource.data.matchId == matchId &&
                        exists(/databases/$(database)/documents/matches/$(matchId)) &&
                        request.auth.uid in get(/databases/$(database)/documents/matches/$(matchId)).data.users;
 
